@@ -777,6 +777,11 @@
                       <label for="supplierSpecialty">التخصص (مثال: دهانات, كهرباء)</label>
                       <input type="text" id="supplierSpecialty">
                   </div>
+                  <!-- *** إضافة: حقل جديد للملاحظات *** -->
+                  <div class="form-group">
+                      <label for="supplierNotes">ملاحظات (اختياري)</label>
+                      <textarea id="supplierNotes" rows="3" placeholder="أي تفاصيل إضافية عن المورد..."></textarea>
+                  </div>
                   <div class="form-actions">
                       <button type="submit" class="btn">حفظ</button>
                       <button type="button" class="btn" id="deleteSupplierBtn" style="display: none; background-color: #ef4444;">حذف</button>
@@ -1001,6 +1006,80 @@
       </div>
   </div>
 
+  <!-- *** إضافة: نافذة منبثقة لإضافة/تعديل المهام *** -->
+  <div id="taskModal" class="modal-container" style="display: none;">
+      <div class="modal-backdrop"></div>
+      <div class="modal-content" style="max-width: 450px;">
+          <div class="modal-header">
+              <h3 id="taskModalTitle">إضافة مهمة جديدة</h3>
+              <button class="close-btn" data-action="close-modal">&times;</button>
+          </div>
+          <div class="modal-body">
+              <form id="taskForm">
+                  <input type="hidden" id="taskId">
+                  <input type="hidden" id="taskProjectId">
+                  <div class="form-group">
+                      <label for="taskTitle">عنوان المهمة</label>
+                      <input type="text" id="taskTitle" required placeholder="مثال: تركيب الجبس لغرفة الجلوس">
+                  </div>
+                  <div class="form-group">
+                      <label for="taskStatus">حالة المهمة</label>
+                      <select id="taskStatus" class="form-group input" style="padding: 10px; width: 100%;">
+                          <option value="todo">جديدة</option>
+                          <option value="inprogress">قيد التنفيذ</option>
+                          <option value="done">مكتملة</option>
+                      </select>
+                  </div>
+                  <div class="form-group">
+                      <label for="taskAssignedTo">إسناد إلى (يمكن اختيار أكثر من عامل)</label>
+                      <select id="taskAssignedTo" multiple class="form-group input" style="padding: 10px; width: 100%; height: 120px;"></select>
+                  </div>
+                  <div class="form-actions">
+                      <button type="submit" class="btn">حفظ المهمة</button>
+                      <button type="button" class="btn" id="deleteTaskBtn" style="display: none; background-color: #ef4444;">حذف</button>
+                  </div>
+              </form>
+          </div>
+      </div>
+  </div>
+
+  <!-- *** إضافة: نافذة منبثقة لإضافة/تعديل المهام *** -->
+  <div id="taskModal" class="modal-container" style="display: none;">
+      <div class="modal-backdrop"></div>
+      <div class="modal-content" style="max-width: 450px;">
+          <div class="modal-header">
+              <h3 id="taskModalTitle">إضافة مهمة جديدة</h3>
+              <button class="close-btn" data-action="close-modal">&times;</button>
+          </div>
+          <div class="modal-body">
+              <form id="taskForm">
+                  <input type="hidden" id="taskId">
+                  <input type="hidden" id="taskProjectId">
+                  <div class="form-group">
+                      <label for="taskTitle">عنوان المهمة</label>
+                      <input type="text" id="taskTitle" required placeholder="مثال: تركيب الجبس لغرفة الجلوس">
+                  </div>
+                  <div class="form-group">
+                      <label for="taskStatus">حالة المهمة</label>
+                      <select id="taskStatus" class="form-group input" style="padding: 10px; width: 100%;">
+                          <option value="todo">جديدة</option>
+                          <option value="inprogress">قيد التنفيذ</option>
+                          <option value="done">مكتملة</option>
+                      </select>
+                  </div>
+                  <div class="form-group">
+                      <label for="taskAssignedTo">إسناد إلى (يمكن اختيار أكثر من عامل)</label>
+                      <select id="taskAssignedTo" multiple class="form-group input" style="padding: 10px; width: 100%; height: 120px;"></select>
+                  </div>
+                  <div class="form-actions">
+                      <button type="submit" class="btn">حفظ المهمة</button>
+                      <button type="button" class="btn" id="deleteTaskBtn" style="display: none; background-color: #ef4444;">حذف</button>
+                  </div>
+              </form>
+          </div>
+      </div>
+  </div>
+
 
   <!-- Container for printing content -->
   <div id="printContainer" class="print-only" style="display: none;"></div>
@@ -1015,8 +1094,8 @@
   
   // --- Database Setup (Dexie.js) ---
   const db = new Dexie('decorManagerDB');
-  // *** إصلاح: تم دمج تعريف جدول 'projects' المكرر في تعريف واحد ***
-  db.version(16).stores({
+  // *** إضافة: جدول جديد للمهام ورفع إصدار قاعدة البيانات ***
+  db.version(19).stores({
       workers: '++id, name, settlements',
       projects: '++id, name, clientId, status', // التعريف الصحيح الذي يشمل الحالة
       clients: '++id, name',
@@ -1044,11 +1123,10 @@
     projects: [],
     workers: [],
     suppliers: [],
-    notes: [],
+    notes: [], // *** إصلاح: إضافة حالة لتخزين المهام ***
     inventory: [],
     projectPayments: [],
     calendarEvents: [],
-    expenses: [],
     clients: [],
     companyProfiles: [],
     api_configs: []
@@ -1619,6 +1697,13 @@
                     <i class="fas fa-phone" style="margin-left: 8px;"></i> اتصال
                 </a>` : ''}
             </div>
+
+            ${supplier.notes ? `
+            <div style="background: var(--bg); padding: 12px; border-radius: 8px; margin-top: 16px;">
+                <div style="font-size:13px; color:var(--muted);">ملاحظات</div>
+                <div style="font-weight:500; font-size:15px; margin-top: 4px; white-space: pre-wrap;">${supplier.notes}</div>
+            </div>
+            ` : ''}
         </div>
     `;
   }
@@ -2117,7 +2202,27 @@
                 <div style="color: #15803d; font-weight: 700; display: flex; align-items: center; gap: 8px;"><i class="fas fa-check-circle"></i> هذا المشروع منتهي (اضغط لإعادة التفعيل)</div>
            </div>` : '';
 
-    const tasksTabContent = `<p style="text-align:center; color:var(--muted); padding: 40px 20px;">سيتم تطوير قسم المهام والمخطط الزمني قريباً.</p>`;
+    // *** إضافة: إنشاء واجهة تبويب سجل الديون ***
+    const unpaidExpenses = projectExpenses.filter(e => e.paymentStatus === 'unpaid');
+    const debtsListHTML = unpaidExpenses.length > 0 ? unpaidExpenses.map(expense => {
+        return `
+            <!-- *** تحسين: عند الضغط يتم عرض تفاصيل النفقة (الدين) *** -->
+            <div class="activity-log-item" style="cursor: pointer;" onclick="renderView('expense-details', {id: ${expense.id}})">
+                <div>
+                    <div style="font-weight: 700;">${expense.description}</div>
+                    <div style="font-size: 13px; color: var(--muted);">${new Date(expense.date).toLocaleDateString('ar-DZ')}</div>
+                </div>
+                <div style="font-weight: 700; font-size: 15px; color: #ef4444;">-${expense.amount.toLocaleString()} د.ج</div>
+            </div>
+        `;
+    }).join('') : `<p style="text-align:center; color:var(--muted);">لا توجد ديون مسجلة لهذا المشروع.</p>`;
+
+    const debtsTabContent = `
+        <div style="display:flex; justify-content:space-between; align-items:center; margin: 20px 0 12px;">
+            <h4 style="margin:0; font-weight:700;">سجل الديون (نفقات غير مدفوعة)</h4>
+        </div>
+        ${debtsListHTML}
+    `;
 
     return `
         <!-- *** تحسين: نقل زر التعديل للأعلى وتغيير تصميمه *** -->
@@ -2138,15 +2243,89 @@
         <div class="tab-card-container">
             <div class="tab-card ${activeTab === 'overview' ? 'active' : ''}" data-tab="overview" style="background: linear-gradient(135deg, #64748b, #475569);"><i class="fas fa-chart-pie"></i><span>ملخص</span></div>
             <div class="tab-card ${activeTab === 'finance' ? 'active' : ''}" data-tab="finance" style="background: linear-gradient(135deg, #10b981, #059669);"><i class="fas fa-wallet"></i><span>المالية</span></div>
-            <div class="tab-card ${activeTab === 'tasks' ? 'active' : ''}" data-tab="tasks" style="background: linear-gradient(135deg, #3b82f6, #2563eb);"><i class="fas fa-tasks"></i><span>المهام</span></div>
+            <div class="tab-card ${activeTab === 'debts' ? 'active' : ''}" data-tab="debts" style="background: linear-gradient(135deg, #f97316, #ea580c);"><i class="fas fa-book"></i><span>سجل الديون</span></div>
         </div>
 
         <!-- Tab Content -->
         <div id="overviewTab" class="tab-content ${activeTab === 'overview' ? 'active' : ''}">${overviewTabContent}</div>
         <div id="financeTab" class="tab-content ${activeTab === 'finance' ? 'active' : ''}">${financeTabContent} ${finishedProjectIndicatorHTML}</div>
-        <div id="tasksTab" class="tab-content ${activeTab === 'tasks' ? 'active' : ''}">${tasksTabContent}</div>
+        <div id="debtsTab" class="tab-content ${activeTab === 'debts' ? 'active' : ''}">${debtsTabContent}</div>
     `;
 }
+
+  // *** إصلاح: تم نقل دوال المهام إلى هنا لضمان تعريفها قبل استخدامها ***
+  function openTaskModal(taskId = null, projectId = null) {
+      const modal = document.getElementById('taskModal');
+      const form = document.getElementById('taskForm');
+      const titleEl = document.getElementById('taskModalTitle');
+      const deleteBtn = document.getElementById('deleteTaskBtn');
+      const assignedToSelect = document.getElementById('taskAssignedTo');
+
+      form.reset();
+      deleteBtn.style.display = 'none';
+      
+      // If projectId is not passed, try to get it from the current view state
+      const currentProjectId = projectId || state.currentView.params.id;
+      document.getElementById('taskProjectId').value = currentProjectId;
+
+      // تعبئة قائمة العمال
+      assignedToSelect.innerHTML = state.workers.map(w => `<option value="${w.id}">${w.name}</option>`).join('');
+
+      if (taskId) {
+          const task = state.projectTasks.find(t => t.id === taskId);
+          if (task) {
+              titleEl.textContent = 'تعديل المهمة';
+              document.getElementById('taskId').value = task.id;
+              document.getElementById('taskTitle').value = task.title;
+              document.getElementById('taskStatus').value = task.status;
+              // تحديد العمال المسند إليهم
+              (task.assignedTo || []).forEach(workerId => {
+                  const option = assignedToSelect.querySelector(`option[value="${workerId}"]`);
+                  if (option) option.selected = true;
+              });
+              deleteBtn.style.display = 'block';
+          }
+      } else {
+          titleEl.textContent = 'إضافة مهمة جديدة';
+          document.getElementById('taskId').value = '';
+      }
+
+      modal.style.display = 'flex';
+  }
+
+  function closeTaskModal() {
+      document.getElementById('taskModal').style.display = 'none';
+  }
+
+  async function handleTaskFormSubmit(e) {
+      e.preventDefault();
+      try {
+          const id = document.getElementById('taskId').value ? parseInt(document.getElementById('taskId').value) : null;
+          const projectId = parseInt(document.getElementById('taskProjectId').value);
+          
+          const assignedTo = Array.from(document.getElementById('taskAssignedTo').selectedOptions).map(opt => parseInt(opt.value));
+
+          const taskData = {
+              projectId: projectId,
+              title: document.getElementById('taskTitle').value,
+              status: document.getElementById('taskStatus').value,
+              assignedTo: assignedTo,
+              createdAt: new Date().toISOString()
+          };
+
+          if (id) {
+              await db.projectTasks.update(id, taskData);
+          } else {
+              await db.projectTasks.add(taskData);
+          }
+          closeTaskModal();
+          await renderView('project-details', { id: projectId, tab: 'tasks' });
+          showToast('تم حفظ المهمة بنجاح');
+      } catch (error) {
+          console.error('Error saving task:', error);
+          showCustomToast('حدث خطأ أثناء حفظ المهمة', 'error');
+      }
+  }
 
   // *** إضافة: دالة لفتح نافذة عرض كل الدفعات ***
   function openAllPaymentsModal(projectId) {
@@ -3622,6 +3801,7 @@
               supplierNameInput.value = supplier.name;
               supplierPhoneInput.value = supplier.phone;
               supplierSpecialtyInput.value = supplier.specialty;
+              document.getElementById('supplierNotes').value = supplier.notes || '';
               if (supplier.imageUrl) {
                   supplierImageDataBase64.value = supplier.imageUrl;
                   supplierImagePreview.src = supplier.imageUrl;
@@ -3666,6 +3846,7 @@
           phone: supplierPhoneInput.value,
           specialty: supplierSpecialtyInput.value,
           imageUrl: supplierImageDataBase64.value,
+          notes: document.getElementById('supplierNotes').value,
       };
 
       if (id) {
@@ -5153,6 +5334,36 @@
           });
       }
   });
+
+    // Task Modal Listeners (ensure task form doesn't trigger full page reload)
+    const taskModal = document.getElementById('taskModal');
+    const taskForm = document.getElementById('taskForm');
+    const deleteTaskBtn = document.getElementById('deleteTaskBtn');
+
+    if (taskForm) {
+        taskForm.addEventListener('submit', handleTaskFormSubmit);
+    }
+    if (taskModal) {
+        taskModal.addEventListener('click', (e) => {
+            if (e.target.dataset.action === 'close-modal' || e.target.classList.contains('modal-backdrop')) {
+                closeTaskModal();
+            }
+        });
+    }
+    if (deleteTaskBtn) {
+        deleteTaskBtn.addEventListener('click', () => {
+            const id = parseInt(document.getElementById('taskId').value) || parseInt(deleteTaskBtn.dataset.id);
+            if (id) {
+                openConfirmModal('هل أنت متأكد من حذف هذه المهمة؟', async () => {
+                    await db.projectTasks.delete(id);
+                    const projectId = parseInt(document.getElementById('taskProjectId').value);
+                    renderView('project-details', { id: projectId, tab: 'tasks' });
+                    closeTaskModal();
+                    closeConfirmModal();
+                });
+            }
+        });
+    }
 
   // Event Details Modal Listeners
   eventDetailsModal.addEventListener('click', (e) => {
