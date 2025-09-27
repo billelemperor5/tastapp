@@ -817,7 +817,7 @@
               <p id="confirmModalMessage" style="margin-top:0; margin-bottom: 20px; font-size: 15px; line-height: 1.6;"></p>
               <div class="form-actions" style="justify-content: center;">
                   <button type="button" class="btn" id="confirmModalCancelBtn" style="background-color: var(--muted);">إلغاء</button>
-                  <button type="button" class="btn" id="confirmModalConfirmBtn">نعم، قم بالحذف</button>
+                  <button type="button" class="btn" id="confirmModalConfirmBtn">نعم</button>
               </div>
           </div>
       </div>
@@ -1015,9 +1015,10 @@
   
   // --- Database Setup (Dexie.js) ---
   const db = new Dexie('decorManagerDB');
-  db.version(15).stores({
+  // *** إصلاح: تم دمج تعريف جدول 'projects' المكرر في تعريف واحد ***
+  db.version(16).stores({
       workers: '++id, name, settlements',
-      projects: '++id, name, clientId',
+      projects: '++id, name, clientId, status', // التعريف الصحيح الذي يشمل الحالة
       clients: '++id, name',
       suppliers: '++id, name',
       inventory: '++id, name, borrowerName',
@@ -1026,14 +1027,19 @@
       projectPayments: '++id, projectId, date',
       api_configs: '++id, name, provider', // New table for AI API configurations, added provider index
       companyProfiles: '++id, profileName', 
-      notes: '++id, updatedAt', // Added imageUrl
+      notes: '++id, updatedAt',
       app_settings: 'key' // A simple key-value store for things like theme
   }).upgrade(tx => {
-    return tx.table('todos').clear(); // Clear old 'todos' table data on upgrade
+    // *** إصلاح: تم حذف هذا السطر لأنه يحاول الوصول إلى جدول 'todos' الذي لم يعد موجوداً في هذا الإصدار من قاعدة البيانات ***
+    // return tx.table('todos').clear(); 
   });
+
+  // *** إضافة: متغير لتتبع حالة فتح قاعدة البيانات ***
+  let isDbOpen = false;
 
   // حالة التطبيق (البيانات)
   let state = {
+    previousView: null, // *** إضافة: لتتبع الواجهة السابقة ***
     currentView: { name: 'home', params: {} },
     projects: [],
     workers: [],
@@ -1203,23 +1209,39 @@
   }
   
   async function renderView(viewName, params = {}) {
+    // *** تحسين: التأكد من أن قاعدة البيانات مفتوحة قبل محاولة القراءة منها ***
+    if (!isDbOpen) {
+        console.log("Database not open yet, delaying renderView call...");
+        // إذا لم تكن قاعدة البيانات مفتوحة، انتظر قليلاً ثم حاول مرة أخرى
+        setTimeout(() => renderView(viewName, params), 100);
+        return;
+    }
+
+    state.previousView = state.currentView; // *** إضافة: حفظ الواجهة الحالية قبل الانتقال ***
     state.currentView = { name: viewName, params };
 
     const currentView = mainContent.querySelector('.view-container');
     const transitionDuration = 250;
 
-    // Re-fetch data that might have changed, ensuring views are always fresh
-    state.workers = await db.workers.toArray();
-    state.projects = await db.projects.toArray();
-    state.suppliers = await db.suppliers.toArray();
-    state.notes = await db.notes.toArray();
-    state.projectPayments = await db.projectPayments.toArray();
-    state.inventory = await db.inventory.toArray();
-    state.calendarEvents = await db.calendarEvents.toArray();
-    state.expenses = await db.expenses.toArray();
-    state.companyProfiles = await db.companyProfiles.toArray();
-    state.clients = await db.clients.toArray();
-    state.api_configs = await db.api_configs.toArray();
+    // *** تحسين: إضافة try/catch لجلب البيانات لمعالجة أي أخطاء محتملة ***
+    try {
+        // Re-fetch data that might have changed, ensuring views are always fresh
+        state.workers = await db.workers.toArray();
+        state.projects = await db.projects.toArray();
+        state.suppliers = await db.suppliers.toArray();
+        state.notes = await db.notes.toArray();
+        state.projectPayments = await db.projectPayments.toArray();
+        state.inventory = await db.inventory.toArray();
+        state.calendarEvents = await db.calendarEvents.toArray();
+        state.expenses = await db.expenses.toArray();
+        state.companyProfiles = await db.companyProfiles.toArray();
+        state.clients = await db.clients.toArray();
+        state.api_configs = await db.api_configs.toArray();
+    } catch (error) {
+        console.error("Error fetching data in renderView:", error);
+        mainContent.innerHTML = `<div class="view-container"><p style="color: #ef4444; text-align: center;">حدث خطأ أثناء تحميل بيانات الواجهة.</p></div>`;
+        return; // إيقاف التنفيذ إذا فشل جلب البيانات
+    }
 
     const renderNewContent = async () => {
         mainContent.innerHTML = '';
@@ -1276,6 +1298,8 @@
         if (viewName === 'project-details') {
             document.getElementById('backToProjects')?.addEventListener('click', () => renderView('projects'));
             document.getElementById('editProjectBtn')?.addEventListener('click', (e) => openProjectModal(parseInt(e.currentTarget.dataset.id)));
+            // *** إضافة: ربط زر تحليل المشروع بالذكاء الاصطناعي ***
+            document.getElementById('analyzeProjectBtn')?.addEventListener('click', (e) => handleAnalysisRequest('project', parseInt(e.currentTarget.dataset.id)));
             // Use event delegation for buttons inside tabs
             mainContent.addEventListener('click', e => {
                 const addExpenseBtn = e.target.closest('#addExpenseForProjectBtn');
@@ -1493,14 +1517,20 @@
   function getProjectsView() { 
     const projectsListHTML = state.projects && state.projects.length > 0
         ? state.projects.map(project => {
-            const client = state.clients.find(c => c.id === project.clientId);
+            const statusStyles = {
+                active: { text: 'نشط', bg: '#10b981', gradient: 'linear-gradient(135deg, #10b981, #059669)' },
+                completed: { text: 'منتهي', bg: '#6366f1', gradient: 'linear-gradient(135deg, #6366f1, #4f46e5)' },
+                default: { text: 'منتهي ', bg: '#64748b', gradient: 'linear-gradient(135deg, #64748b, #475569)' }
+            };
+            const status = project.status || 'active';
+            const style = statusStyles[status] || statusStyles.default;
             return `
             <div class="card" data-action="view-project" data-id="${project.id}" style="flex-direction: row; justify-content: space-between; align-items: center; text-align: right; margin-bottom: 12px; padding: 12px 16px;">
                 <div style="display:flex; align-items:center; gap: 12px;">
                     <div class="icon" style="width:48px; height:48px; background: linear-gradient(135deg,#06b6d4,#0284c7); font-size: 20px; margin-bottom: 0;"><i class="fas fa-hard-hat"></i></div>
                     <div>
                         <div style="font-weight: 700;">${project.name}</div>
-                        <div style="font-size: 13px; color: var(--muted);">${client ? `العميل: ${client.name}` : 'بدون عميل'}</div>
+                        <div class="status-badge" style="background: ${style.gradient}; display: inline-block; margin-top: 6px; font-size: 11px;">${style.text}</div>
                     </div>
                 </div>
                 <div style="text-align: left;">
@@ -1961,16 +1991,20 @@
     const project = state.projects.find(p => p.id === projectId);
     if (!project) return `<p>لم يتم العثور على المشروع.</p><button id="backToProjects">العودة</button>`;
 
+
     const client = project.clientId ? state.clients.find(c => c.id === project.clientId) : null;
     
     // Financial Calculations
     const clientPayments = state.projectPayments.filter(p => p.projectId === projectId);
     const totalReceived = clientPayments.reduce((sum, p) => sum + p.amount, 0);
     const projectExpenses = state.expenses.filter(e => e.projectId === projectId);
-    const totalExpenses = projectExpenses.reduce((sum, e) => sum + e.amount, 0);
+    // *** تحسين: حساب إجمالي النفقات المدفوعة فقط ***
+    const totalExpenses = projectExpenses.filter(e => e.paymentStatus === 'paid').reduce((sum, e) => sum + e.amount, 0);
     // *** تحسين: تعديل الحسابات المالية حسب الطلب الجديد ***
     const budget = project.budget || 0;
-    const remainingBalance = budget - totalExpenses;
+    // *** إضافة: حساب "المتبقي على العميل" و "الرصيد الصافي" ***
+    const remainingFromClient = budget - totalReceived;
+    const netBalance = totalReceived - totalExpenses; // هذا هو الربح/الخسارة
     const budgetExceeded = totalExpenses > budget;
 
     // *** إضافة: إنشاء رسالة تحذير عند تجاوز الميزانية ***
@@ -1982,23 +2016,28 @@
     ` : '';
 
     const overviewTabContent = `
-        <!-- *** تحسين: إعادة تصميم بطاقات الملخص المالي لعرض المعلومات بشكل أوضح *** -->
-        <div class="grid-cards" style="grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); margin-top:16px; margin-bottom: 20px;">
+        <!-- *** تحسين: إعادة تصميم بطاقات الملخص المالي لعرض 5 قيم *** -->
+        <div class="grid-cards" style="grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); margin-top:16px; margin-bottom: 20px;">
             <div class="card" style="cursor:default; transform:none; text-align:right; align-items:flex-start; padding:12px;">
                 <div style="font-size:13px; color:var(--muted);">الميزانية التقديرية</div>
                 <div style="font-weight:800; font-size:18px; color:var(--primary);">${budget.toLocaleString()} د.ج</div>
-            </div>
-            <div class="card" style="cursor:default; transform:none; text-align:right; align-items:flex-start; padding:12px;">
-                <div style="font-size:13px; color:var(--muted);">إجمالي النفقات</div>
-                <div style="font-weight:800; font-size:18px; color:${budgetExceeded ? '#ef4444' : '#f97316'};">${totalExpenses.toLocaleString()} د.ج</div>
             </div>
             <div class="card" style="cursor:default; transform:none; text-align:right; align-items:flex-start; padding:12px;">
                 <div style="font-size:13px; color:var(--muted);">المبلغ المستلم</div>
                 <div style="font-weight:800; font-size:18px; color:#10b981;">${totalReceived.toLocaleString()} د.ج</div>
             </div>
             <div class="card" style="cursor:default; transform:none; text-align:right; align-items:flex-start; padding:12px;">
-                <div style="font-size:13px; color:var(--muted);">الرصيد المتبقي من الميزانية</div>
-                <div style="font-weight:800; font-size:18px; color:${remainingBalance >= 0 ? '#22c55e' : '#ef4444'};">${remainingBalance.toLocaleString()} د.ج</div>
+                <div style="font-size:13px; color:var(--muted);">إجمالي النفقات</div>
+                <div style="font-weight:800; font-size:18px; color:${budgetExceeded ? '#ef4444' : '#f97316'};">${totalExpenses.toLocaleString()} د.ج</div>
+            </div>
+            <div class="card" style="cursor:default; transform:none; text-align:right; align-items:flex-start; padding:12px;">
+                <div style="font-size:13px; color:var(--muted);">المتبقي على العميل</div>
+                <div style="font-weight:800; font-size:18px; color:${remainingFromClient >= 0 ? 'var(--muted)' : '#ef4444'};">${remainingFromClient.toLocaleString()} د.ج</div>
+            </div>
+            <!-- *** إضافة: بطاقة جديدة لعرض الرصيد الصافي (الربح/الخسارة) *** -->
+            <div class="card" style="cursor:default; transform:none; text-align:right; align-items:flex-start; padding:12px; background: linear-gradient(135deg, rgba(168, 85, 247, 0.1), rgba(147, 51, 234, 0.1)); border-color: #a855f7;">
+                <div style="font-size:13px; color:var(--muted);">الرصيد الصافي</div>
+                <div style="font-weight:800; font-size:18px; color:${netBalance >= 0 ? '#a855f7' : '#ef4444'};">${netBalance.toLocaleString()} د.ج</div>
             </div>
         </div>
         <!-- *** إضافة: عرض معلومات صاحب المنزل وصاحب البناء *** -->
@@ -2072,16 +2111,24 @@
         </div>${limitedExpensesHTML} 
     `;
 
+    // *** إضافة: زر "المشروع منتهي" يظهر فقط في حالة انتهاء المشروع ***
+    const finishedProjectIndicatorHTML = project.status === 'finished'
+        ? `<div class="card" style="cursor: pointer; transform: none; margin-top: 16px; background-color: rgba(34, 197, 94, 0.1);" id="reopenProjectBtn" data-id="${project.id}">
+                <div style="color: #15803d; font-weight: 700; display: flex; align-items: center; gap: 8px;"><i class="fas fa-check-circle"></i> هذا المشروع منتهي (اضغط لإعادة التفعيل)</div>
+           </div>` : '';
+
     const tasksTabContent = `<p style="text-align:center; color:var(--muted); padding: 40px 20px;">سيتم تطوير قسم المهام والمخطط الزمني قريباً.</p>`;
 
     return `
         <!-- *** تحسين: نقل زر التعديل للأعلى وتغيير تصميمه *** -->
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px;">
-            <div>
+            <div style="display: flex; align-items: center;">
                 <h3 style="margin:0 0 4px; font-weight:800">${project.name}</h3>
                 ${client ? `<div style="font-size: 14px; color: var(--muted); cursor: pointer;" onclick="renderView('client-details', {id: ${client.id}})">العميل: ${client.name}</div>` : ''}
             </div>
             <div>
+                <!-- *** إضافة: زر جديد لتحليل المشروع بالذكاء الاصطناعي *** -->
+                <button id="analyzeProjectBtn" data-id="${project.id}" class="btn ghost" style="margin-left: 8px; color: #0ea5e9; border-color: #0ea5e9;"><i class="fas fa-robot"></i> تحليل</button>
                 <button id="editProjectBtn" data-id="${project.id}" class="btn ghost" style="margin-left: 8px; color: var(--primary); border-color: var(--primary);"><i class="fas fa-edit" style="margin-left:6px;"></i> تعديل</button>
                 <button id="backToProjects" class="btn"><i class="fas fa-arrow-right" style="margin-left: 6px;"></i> العودة للمشاريع</button>
             </div>
@@ -2096,7 +2143,7 @@
 
         <!-- Tab Content -->
         <div id="overviewTab" class="tab-content ${activeTab === 'overview' ? 'active' : ''}">${overviewTabContent}</div>
-        <div id="financeTab" class="tab-content ${activeTab === 'finance' ? 'active' : ''}">${financeTabContent}</div>
+        <div id="financeTab" class="tab-content ${activeTab === 'finance' ? 'active' : ''}">${financeTabContent} ${finishedProjectIndicatorHTML}</div>
         <div id="tasksTab" class="tab-content ${activeTab === 'tasks' ? 'active' : ''}">${tasksTabContent}</div>
     `;
 }
@@ -2149,7 +2196,8 @@
             <thead><tr><th>التاريخ</th><th>الوصف</th><th class="amount-col">المبلغ</th></tr></thead>
             <tbody>
                 ${projectExpenses.map(e => `
-                    <tr onclick="renderView('expense-details', {id: ${e.id}})">
+                    <!-- *** إصلاح: إضافة استدعاء لإغلاق النافذة عند النقر *** -->
+                    <tr onclick="closeAllExpensesModal(); renderView('expense-details', {id: ${e.id}})">
                         <td>${new Date(e.date).toLocaleDateString('ar-DZ')}</td>
                         <td>${e.description}</td>
                         <td class="amount-col negative">-${e.amount.toLocaleString()} د.ج</td>
@@ -2160,6 +2208,11 @@
 
     document.getElementById('allExpensesContent').innerHTML = allExpensesHTML;
     document.getElementById('allExpensesModal').style.display = 'flex';
+  }
+  
+  // *** إضافة: دالة لإغلاق نافذة عرض كل النفقات ***
+  function closeAllExpensesModal() {
+      document.getElementById('allExpensesModal').style.display = 'none';
   }
 
 
@@ -2297,30 +2350,44 @@
     const today = new Date();
     const currentMonth = state.currentView.params.month === undefined ? today.getMonth() : state.currentView.params.month;
     const currentYear = state.currentView.params.year === undefined ? today.getFullYear() : state.currentView.params.year;
+    const currentFilter = state.currentView.params.filter || 'all'; // 'all', 'paid', 'unpaid'
 
     const prevMonth = new Date(currentYear, currentMonth - 1, 1);
     const nextMonth = new Date(currentYear, currentMonth + 1, 1);
 
-    const filteredExpenses = state.expenses.filter(expense => {
+    const monthExpenses = state.expenses.filter(expense => {
         const expenseDate = new Date(expense.date);
         return expenseDate.getFullYear() === currentYear && expenseDate.getMonth() === currentMonth;
-    }).sort((a, b) => new Date(b.date) - new Date(a.date));
+    });
+
+    const filteredExpenses = monthExpenses.filter(e => currentFilter === 'all' || e.paymentStatus === currentFilter).sort((a, b) => new Date(b.date) - new Date(a.date));
 
     const totalMonthExpenses = filteredExpenses.reduce((sum, expense) => sum + expense.amount, 0);
 
+    const filterButtonsHTML = `
+        <div class="tab-card-container" style="margin-bottom: 20px;">
+            <div class="tab-card ${currentFilter === 'all' ? 'active' : ''}" onclick="renderView('expenses', {filter: 'all', month: ${currentMonth}, year: ${currentYear}})" style="background: linear-gradient(135deg, #64748b, #475569);">
+                <i class="fas fa-list"></i>
+                <span>الكل</span>
+            </div>
+            <div class="tab-card ${currentFilter === 'paid' ? 'active' : ''}" onclick="renderView('expenses', {filter: 'paid', month: ${currentMonth}, year: ${currentYear}})" style="background: linear-gradient(135deg, #10b981, #059669);">
+                <i class="fas fa-check-circle"></i>
+                <span>المدفوعة</span>
+            </div>
+            <div class="tab-card ${currentFilter === 'unpaid' ? 'active' : ''}" onclick="renderView('expenses', {filter: 'unpaid', month: ${currentMonth}, year: ${currentYear}})" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
+                <i class="fas fa-exclamation-circle"></i>
+                <span>غير المدفوعة</span>
+            </div>
+        </div>
+    `;
+
     const expensesListHTML = filteredExpenses.length > 0
         ? filteredExpenses.map(expense => {
-            const worker = expense.workerId ? state.workers.find(w => w.id === expense.workerId) : null;
             const project = expense.projectId ? state.projects.find(p => p.id === expense.projectId) : null;
             const isUnpaid = expense.category === 'material' && expense.paymentStatus === 'unpaid';
             const supplier = expense.supplierId ? state.suppliers.find(s => s.id === expense.supplierId) : null;
             
-            let linkedToHTML = '';
-            if (worker) {
-                linkedToHTML = `<div style="font-size: 13px; color: var(--muted); margin-top: 4px;"><i class="fas fa-user" style="margin-left: 4px; opacity: 0.7;"></i> ${worker.name}</div>`;
-            } else if (project) {
-                linkedToHTML = `<div style="font-size: 13px; color: var(--muted); margin-top: 4px;"><i class="fas fa-hard-hat" style="margin-left: 4px; opacity: 0.7;"></i> ${project.name}</div>`;
-            }
+            let linkedToHTML = project ? `<div style="font-size: 13px; color: var(--muted); margin-top: 4px;"><i class="fas fa-hard-hat" style="margin-left: 4px; opacity: 0.7;"></i> ${project.name}</div>` : '';
             const supplierHTML = supplier ? `<div style="font-size: 13px; color: var(--muted); margin-top: 4px;"><i class="fas fa-truck" style="margin-left: 4px; opacity: 0.7;"></i> ${supplier.name}</div>` : '';
 
 
@@ -2367,6 +2434,25 @@
             </div>
         </div>
 
+        <!-- أزرار التصفية -->
+        <div class="filter-buttons" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px;">
+            <div class="${currentFilter === 'all' ? 'active' : ''}" onclick="renderView('expenses', {month: ${currentMonth}, year: ${currentYear}, filter: 'all'})" 
+                style="background: linear-gradient(135deg, #64748b, #475569); border-radius: 10px; padding: 8px; color: white; text-align: center; cursor: pointer; transition: transform 0.2s ease; display: flex; flex-direction: column; align-items: center; gap: 4px; box-shadow: ${currentFilter === 'all' ? '0 6px 12px rgba(0,0,0,0.1)' : 'none'}; transform: ${currentFilter === 'all' ? 'translateY(-3px)' : 'none'};">
+                <i class="fas fa-list" style="font-size: 16px;"></i>
+                <span style="font-weight: 700; font-size: 13px;">الكل</span>
+            </div>
+            <div class="${currentFilter === 'paid' ? 'active' : ''}" onclick="renderView('expenses', {month: ${currentMonth}, year: ${currentYear}, filter: 'paid'})" 
+                style="background: linear-gradient(135deg, #10b981, #059669); border-radius: 10px; padding: 8px; color: white; text-align: center; cursor: pointer; transition: transform 0.2s ease; display: flex; flex-direction: column; align-items: center; gap: 4px; box-shadow: ${currentFilter === 'paid' ? '0 6px 12px rgba(0,0,0,0.1)' : 'none'}; transform: ${currentFilter === 'paid' ? 'translateY(-3px)' : 'none'};">
+                <i class="fas fa-check-circle" style="font-size: 16px;"></i>
+                <span style="font-weight: 700; font-size: 13px;">المدفوعة</span>
+            </div>
+            <div class="${currentFilter === 'unpaid' ? 'active' : ''}" onclick="renderView('expenses', {month: ${currentMonth}, year: ${currentYear}, filter: 'unpaid'})" 
+                style="background: linear-gradient(135deg, #ef4444, #dc2626); border-radius: 10px; padding: 8px; color: white; text-align: center; cursor: pointer; transition: transform 0.2s ease; display: flex; flex-direction: column; align-items: center; gap: 4px; box-shadow: ${currentFilter === 'unpaid' ? '0 6px 12px rgba(0,0,0,0.1)' : 'none'}; transform: ${currentFilter === 'unpaid' ? 'translateY(-3px)' : 'none'};">
+                <i class="fas fa-exclamation-circle" style="font-size: 16px;"></i>
+                <span style="font-weight: 700; font-size: 13px;">غير المدفوعة</span>
+            </div>
+        </div>
+
         ${expensesListHTML}
     `;
   }
@@ -2375,7 +2461,6 @@
     const expense = state.expenses.find(e => e.id === expenseId);
     if (!expense) return `<p>لم يتم العثور على النفقة.</p><button id="backToExpenses">العودة</button>`;
 
-    const worker = expense.workerId ? state.workers.find(w => w.id === expense.workerId) : null;
     const project = expense.projectId ? state.projects.find(p => p.id === expense.projectId) : null;
     const supplier = expense.supplierId ? state.suppliers.find(s => s.id === expense.supplierId) : null;
 
@@ -2383,10 +2468,14 @@
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px;">
             <h3 style="margin:0; font-weight:800">تفاصيل النفقة</h3>
             <div>
-                <button id="editExpenseBtn" data-id="${expense.id}" class="btn ghost" style="margin-left:8px;"><i class="fas fa-edit"></i></button>
+                <!-- *** تحسين: زر العودة الذكي *** -->
+                <button onclick="goBackToPreviousView()" class="btn"><i class="fas fa-arrow-right" style="margin-left: 6px;"></i> العودة</button>
+            </div>
+        </div>
+        <div class="form-actions" style="margin-bottom: 16px;">
+                <button id="editExpenseBtn" data-id="${expense.id}" class="btn ghost" style="flex: 1;"><i class="fas fa-edit" style="margin-left: 8px;"></i> تعديل</button>
                 <button id="analyzeExpenseBtn" data-id="${expense.id}" class="btn ghost" style="margin-left:8px; color: #0ea5e9; border-color: #0ea5e9;"><i class="fas fa-robot"></i></button>
                 <button id="printExpenseBtn" data-id="${expense.id}" class="btn ghost" style="margin-left:8px;"><i class="fas fa-print"></i></button>
-                <button id="backToExpenses" class="btn"><i class="fas fa-arrow-right" style="margin-left: 6px;"></i> العودة</button>
             </div>
         </div>
 
@@ -2421,19 +2510,19 @@
             </div>
             ` : ''}
 
-            ${worker ? `
-            <div style="display: flex; justify-content: space-between; align-items: baseline;">
-                <div style="font-size:14px; color:var(--muted);">الشخص المرتبط</div>
-                <div style="font-weight:700; font-size:16px;"><i class="fas fa-user" style="margin-left: 6px; opacity: 0.7;"></i> ${worker.name}</div>
-            </div>
-            ` : ''}
+            ${expense.notes ? `
+            <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border-color);">
+                <div style="font-size:13px; color: var(--muted);">ملاحظات</div>
+                <div style="font-weight:500; font-size:15px; margin-top: 4px; white-space: pre-wrap;">${expense.notes}</div>
+            </div>` : ''}
 
-            ${supplier ? `
-            <div style="display: flex; justify-content: space-between; align-items: baseline;">
-                <div style="font-size:14px; color:var(--muted);">الشخص المرتبط</div>
-                <div style="font-weight:700; font-size:16px;"><i class="fas fa-user" style="margin-left: 6px; opacity: 0.7;"></i> ${worker.name}</div>
+            <!-- *** إضافة: عرض حالة الدفع في تفاصيل النفقة *** -->
+            <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px;">
+                <div style="font-size:14px; color:var(--muted);">حالة الدفع</div>
+                <div class="status-badge" style="background-color: ${expense.paymentStatus === 'paid' ? '#10b981' : '#ef4444'};">${expense.paymentStatus === 'paid' ? 'مدفوع' : 'غير مدفوع'}</div>
             </div>
-            ` : ''}
+
+
         </div>
     `;
   }
@@ -2966,8 +3055,37 @@
     }
   }
 
+  // *** إضافة: دالة للعودة إلى الواجهة السابقة ***
+  function goBackToPreviousView() {
+    if (state.previousView && state.previousView.name) {
+        renderView(state.previousView.name, state.previousView.params);
+    } else {
+        // Fallback to a default view if no previous view is stored
+        renderView('home');
+    }
+  }
+
   // --- Expense Modal ---
+  function closeAllExpenseModals() {
+      // إغلاق جميع النوافذ المنبثقة المتعلقة بالنفقات
+      const modals = [
+          'allExpensesModal',
+          'projectFullFinanceModal',
+          'expenseModal'
+      ];
+      
+      modals.forEach(modalId => {
+          const modal = document.getElementById(modalId);
+          if (modal) {
+              modal.style.display = 'none';
+          }
+      });
+  }
+
   function openExpenseModal(expenseId = null, prefill = {}) {
+      // إغلاق جميع النوافذ المنبثقة المتعلقة بالنفقات أولاً
+      closeAllExpenseModals();
+
       // Get elements each time the modal is opened to ensure they exist.
       const expenseModal = document.getElementById('expenseModal');
       const expenseForm = document.getElementById('expenseForm');
@@ -2992,8 +3110,7 @@
       // Populate project datalist and worker dropdown
       const projectDatalist = document.getElementById('project-list');
       projectDatalist.innerHTML = state.projects.map(p => `<option value="${p.name}"></option>`).join('');
-      expenseWorkerInput.innerHTML = '<option value="">-- اختر عامل --</option>' + state.workers.map(w => `<option value="${w.id}">${w.name}</option>`).join('');
-      expenseSupplierInput.innerHTML = '<option value="">-- اختر مورد --</option>' + state.suppliers.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+      // Removed worker and supplier dropdown population
 
       if (expenseId) {
           const expense = state.expenses.find(e => e.id === expenseId);
@@ -3008,10 +3125,7 @@
                   const project = state.projects.find(p => p.id === expense.projectId);
                   expenseProjectInput.value = project ? project.name : '';
               }
-              expenseWorkerInput.value = expense.workerId || '';
-              expenseCategoryInput.value = expense.category || 'material';
-              expensePaymentStatusInput.value = expense.paymentStatus || 'paid';
-              expenseSupplierInput.value = expense.supplierId || '';
+              document.querySelector(`input[name="expensePaymentStatus"][value="${expense.paymentStatus || 'paid'}"]`).checked = true;
               if (expense.receiptUrl) {
                   expenseImageDataBase64.value = expense.receiptUrl;
                   expenseImagePreview.src = expense.receiptUrl;
@@ -3030,18 +3144,12 @@
               if (project) expenseProjectInput.value = project.name;
           }
       }
-
-      // Show/hide payment status based on category
-      expenseCategoryInput.onchange = () => {
-          const paymentStatusGroup = document.getElementById('expensePaymentStatusGroup');
-          paymentStatusGroup.style.display = expenseCategoryInput.value === 'material' ? 'block' : 'none';
-      }
+      
       expenseModal.style.display = 'flex';
   }
 
   function closeExpenseModal() {
-      const expenseModal = document.getElementById('expenseModal');
-      expenseModal.style.display = 'none';
+      closeAllExpenseModals();
   }
 
   function resetExpenseImagePreview() {
@@ -3070,10 +3178,6 @@
       const expenseAmountInput = document.getElementById('expenseAmount');
       const expenseDateInput = document.getElementById('expenseDate');
       const expenseProjectNameInput = document.getElementById('expenseProjectName');
-      const expenseWorkerInput = document.getElementById('expenseWorker');
-      const expenseCategoryInput = document.getElementById('expenseCategory');
-      const expensePaymentStatusInput = document.getElementById('expensePaymentStatus');
-      const expenseSupplierInput = document.getElementById('expenseSupplier');
       const expenseImageDataBase64 = document.getElementById('expenseImageDataBase64');
 
       const id = expenseIdInput.value ? parseInt(expenseIdInput.value) : null;
@@ -3090,16 +3194,15 @@
           }
       }
 
+      const paymentStatus = document.querySelector('input[name="expensePaymentStatus"]:checked').value;
       const expenseData = {
           description: expenseDescriptionInput.value,
           amount: parseFloat(expenseAmountInput.value) || 0,
           date: expenseDateInput.value,
           projectId: projectId,
-          workerId: expenseWorkerInput.value ? parseInt(expenseWorkerInput.value) : null,
-          category: expenseCategoryInput.value,
-          paymentStatus: expenseCategoryInput.value === 'material' ? expensePaymentStatusInput.value : 'paid',
-          supplierId: expenseSupplierInput.value ? parseInt(expenseSupplierInput.value) : null,
+          paymentStatus: paymentStatus,
           receiptUrl: expenseImageDataBase64.value,
+          notes: document.getElementById('expenseNotes').value,
       };
 
       if (id) {
@@ -3967,13 +4070,16 @@
                         <label for="projectBudget">الميزانية التقديرية (د.ج)</label>
                         <input type="number" id="projectBudget">
                     </div>
-                    <div class="form-group">
-                        <label for="projectClientId">العميل المرتبط (اختياري)</label>
-                        <select id="projectClientId" class="form-group input" style="padding: 10px; width: 100%;"></select>
+                    <!-- *** إضافة: عرض حالة المشروع داخل نافذة التعديل *** -->
+                    <div class="form-group" id="projectStatusContainer" style="display: none;">
+                        <label>حالة المشروع الحالية</label>
+                        <span id="projectStatusBadge" class="status-badge"></span>
                     </div>
                     <div class="form-actions">
-                        <button type="submit" class="btn">حفظ</button>
-                        <button type="button" class="btn" id="deleteProjectBtn" style="display: none; background-color: #ef4444;">حذف</button>
+                        <button type="submit" class="btn">حفظ التعديلات</button>
+                        <!-- *** تحسين: زر إنهاء المشروع يظهر هنا فقط إذا كان المشروع نشطاً *** -->
+                        <button type="button" class="btn" id="finishProjectBtn" style="display: none; background-color: #f97316; margin-left: auto; margin-right: 0;">إنهاء المشروع</button>
+                        <button type="button" class="btn" id="deleteProjectBtn" style="display: none; background-color: #ef4444;">حذف المشروع</button>
                     </div>
                 </form>
             </div>
@@ -4166,34 +4272,28 @@
                     </div>
                     <div class="form-group">
                         <label for="expenseDate">التاريخ</label>
-                        <input type="date" id="expenseDate" required>
+                        <input type="date" id="expenseDate" required style="background: var(--card); border: 1px solid var(--border-color); border-radius: 8px; padding: 10px; width: 100%;">
                     </div>
                     <div class="form-group">
                         <label for="expenseProjectName">ربط بمشروع (اكتب للاختيار أو للإضافة)</label>
-                        <input type="text" id="expenseProjectName" list="project-list" placeholder="مثال: فيلا بودواو">
+                        <input type="text" id="expenseProjectName" list="project-list" placeholder="مثال: فيلا بودواو" style="background: var(--card); border: 1px solid var(--border-color); border-radius: 8px; padding: 10px; width: 100%;">
                         <datalist id="project-list"></datalist>
                     </div>
+                    <!-- *** إضافة: حقل جديد للملاحظات *** -->
                     <div class="form-group">
-                        <label for="expenseWorker">ربط بعامل (اختياري)</label>
-                        <select id="expenseWorker" class="form-group input" style="padding: 10px; width: 100%;"></select>
+                        <label for="expenseNotes">ملاحظات (اختياري)</label>
+                        <textarea id="expenseNotes" rows="3" placeholder="أضف أي تفاصيل إضافية هنا..."></textarea>
                     </div>
-                    <div class="form-group">
-                        <label for="expenseCategory">تصنيف النفقة</label>
-                        <select id="expenseCategory" class="form-group input" style="padding: 10px; width: 100%;">
-                            <option value="material">شراء مواد</option>
-                            <option value="labor">أجور عمال</option>
-                        </select>
-                    </div>
-                    <div class="form-group" id="expensePaymentStatusGroup">
-                        <label for="expensePaymentStatus">حالة الدفع</label>
-                        <select id="expensePaymentStatus" class="form-group input" style="padding: 10px; width: 100%;">
-                            <option value="paid">مدفوع</option>
-                            <option value="unpaid">غير مدفوع (دين)</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="expenseSupplier">ربط بمورد (اختياري)</label>
-                        <select id="expenseSupplier" class="form-group input" style="padding: 10px; width: 100%;"></select>
+                    <div class="form-group payment-status-group" style="background: var(--card); border: 1px solid var(--border-color); border-radius: 8px; padding: 15px;">
+                        <label style="margin-bottom: 10px; display: block;">حالة الدفع</label>
+                        <div style="display: flex; gap: 10px;">
+                            <label style="flex: 1; cursor: pointer;">
+                                <input type="radio" name="expensePaymentStatus" value="paid" checked style="margin-left: 5px;">مدفوع
+                            </label>
+                            <label style="flex: 1; cursor: pointer;">
+                                <input type="radio" name="expensePaymentStatus" value="unpaid" style="margin-left: 5px;">غير مدفوع
+                            </label>
+                        </div>
                     </div>
                     <div class="form-actions"><button type="submit" class="btn">حفظ</button><button type="button" class="btn" id="deleteExpenseBtn" style="display: none; background-color: #ef4444;">حذف</button></div>
                 </form>
@@ -4336,16 +4436,16 @@
       const form = document.getElementById('projectForm');
       const deleteBtn = document.getElementById('deleteProjectBtn');
       const idInput = document.getElementById('projectId');
-      const clientSelect = document.getElementById('projectClientId');
+      // *** إضافة: جلب زر إنهاء المشروع من نافذة التعديل ***
+      const finishBtn = document.getElementById('finishProjectBtn');
+      // *** إضافة: جلب حاوية وشارة الحالة ***
+      const statusContainer = document.getElementById('projectStatusContainer');
+      const statusBadge = document.getElementById('projectStatusBadge');
 
       form.reset();
       deleteBtn.style.display = 'none';
-
-      // Populate client dropdown
-      clientSelect.innerHTML = '<option value="">-- لا يوجد عميل --</option>';
-      state.clients.forEach(client => {
-          clientSelect.innerHTML += `<option value="${client.id}">${client.name}</option>`;
-      });
+      finishBtn.style.display = 'none'; // إخفاؤه افتراضياً
+      statusContainer.style.display = 'none'; // إخفاء حاوية الحالة افتراضياً
 
       if (projectId) {
           const project = state.projects.find(p => p.id === projectId);
@@ -4356,9 +4456,18 @@
               document.getElementById('homeownerName').value = project.homeownerName || '';
               document.getElementById('builderName').value = project.builderName || '';
               document.getElementById('projectBudget').value = project.budget || '';
-              clientSelect.value = project.clientId || '';
               idInput.value = project.id;
               deleteBtn.style.display = 'block';
+
+              // *** تحسين: عرض الحالة داخل نافذة التعديل ***
+              statusContainer.style.display = 'block';
+              statusBadge.textContent = project.status === 'finished' ? 'منتهي' : 'نشط';
+              statusBadge.style.backgroundColor = project.status === 'finished' ? 'var(--muted)' : '#10b981';
+
+              // *** تحسين: إظهار زر الإنهاء فقط إذا كان المشروع نشطاً ***
+              if (project.status !== 'finished') {
+                  finishBtn.style.display = 'block';
+              }
           }
       } else {
           titleEl.textContent = 'إضافة مشروع جديد';
@@ -4367,6 +4476,38 @@
 
       modal.style.display = 'flex';
   }
+  // *** تحسين: دالة موحدة لتغيير حالة المشروع مع معالجة الأخطاء ***
+  async function toggleProjectStatus(projectId, newStatus) {
+      try {
+          await db.projects.update(projectId, { status: newStatus });
+          console.log(`Project ${projectId} status successfully updated to '${newStatus}'`);
+          // لا تقم بإعادة العرض هنا، سيتم التحكم به من الخارج
+      } catch (error) {
+          console.error("Failed to update project status:", error);
+          alert("حدث خطأ أثناء تحديث حالة المشروع. يرجى المحاولة مرة أخرى.");
+          // Re-throw the error to stop the calling function's flow if needed
+          throw error;
+      }
+  }
+
+  // *** إضافة: ربط أزرار حالة المشروع (إنهاء وإعادة فتح) ***
+  mainContent.addEventListener('click', async (e) => {
+      const reopenBtn = e.target.closest('#reopenProjectBtn');
+      if (reopenBtn) {
+          const id = parseInt(reopenBtn.dataset.id);
+          // التأكيد قبل إعادة تفعيل المشروع
+          openConfirmModal('هل تريد إعادة تفعيل هذا المشروع؟', async () => {
+              try {
+                  await toggleProjectStatus(id, 'active'); // تحديث الحالة
+                  renderView('project-details', { id: id });
+                  showToast('تمت إعادة تفعيل المشروع.');
+                  closeConfirmModal();
+              } catch (error) {
+                  showCustomToast('حدث خطأ أثناء إعادة تفعيل المشروع', 'error');
+              }
+          });
+      }
+  });
 
   function closeProjectModal() {
       document.getElementById('projectModal').style.display = 'none';
@@ -4381,7 +4522,7 @@
           homeownerName: document.getElementById('homeownerName').value,
           builderName: document.getElementById('builderName').value,
           budget: parseFloat(document.getElementById('projectBudget').value) || 0,
-          clientId: document.getElementById('projectClientId').value ? parseInt(document.getElementById('projectClientId').value) : null,
+          // clientId is removed
       };
 
       const projectId = document.getElementById('projectId').value;
@@ -4391,6 +4532,8 @@
               await db.projects.update(parseInt(projectId), projectData);
               showToast('تم تحديث المشروع بنجاح');
           } else {
+              // *** إضافة: تحديد الحالة الافتراضية للمشروع الجديد ***
+              projectData.status = 'active';
               await db.projects.add(projectData);
               showToast('تم إضافة المشروع بنجاح');
           }
@@ -4484,6 +4627,34 @@
 
   function deleteWorker() {
       // Implementation for deleting a worker will be added in the next step
+  }
+
+  // *** إضافة: دالة لإظهار رسالة منبثقة مع زر تراجع ***
+  function showUndoToast(message, onUndo) {
+      const container = document.getElementById('toastContainer');
+      if (!container) return;
+
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.style.backgroundColor = '#f97316'; // Orange color for this special toast
+
+      const messageSpan = document.createElement('span');
+      messageSpan.innerHTML = message;
+
+      const undoButton = document.createElement('button');
+      undoButton.textContent = onUndo.name === 'reopenProject' ? 'إعادة تفعيل' : 'تراجع'; // *** تحسين: تغيير نص الزر حسب السياق ***
+      undoButton.style.cssText = 'background: rgba(255,255,255,0.2); color: white; border: none; padding: 6px 10px; border-radius: 6px; cursor: pointer; margin-right: 15px; font-weight: 700;';
+      
+      undoButton.onclick = () => {
+          onUndo();
+          toast.remove();
+      };
+
+      toast.appendChild(messageSpan);
+      toast.appendChild(undoButton);
+      container.appendChild(toast);
+
+      setTimeout(() => { toast.remove(); }, 6000); // Remove after 6 seconds if not undone
   }
 
   function resetClientImagePreview() {
@@ -4601,6 +4772,25 @@
           closeProjectModal();
           closeConfirmModal();
       });
+  });
+
+  // *** إضافة: معالج حدث لزر إنهاء المشروع ***
+  document.getElementById('finishProjectBtn')?.addEventListener('click', () => {
+      const projectId = parseInt(document.getElementById('projectId').value);
+      if (projectId) {
+          openConfirmModal('هل أنت متأكد من إنهاء هذا المشروع؟', async () => {
+              try {
+                  await toggleProjectStatus(projectId, 'finished');
+                  showToast('تم إنهاء المشروع بنجاح');
+                  closeProjectModal();
+                  closeConfirmModal();
+                  // تحديث العرض مع الانتقال مباشرة إلى تبويب الملخص
+                  renderView('project-details', { id: projectId, tab: 'summary' });
+              } catch (error) {
+                  showCustomToast('حدث خطأ أثناء إنهاء المشروع', 'error');
+              }
+          });
+      }
   });
 
   // *** إصلاح: ربط الأحداث لنافذة المشروع المنبثقة (Modal) ***
@@ -4777,7 +4967,7 @@
   // *** إضافة: ربط النافذة المنبثقة لجميع النفقات ***
   document.getElementById('allExpensesModal').addEventListener('click', (e) => {
       if (e.target.dataset.action === 'close-modal' || e.target.classList.contains('modal-backdrop')) {
-          document.getElementById('allExpensesModal').style.display = 'none';
+          closeAllExpensesModal();
       }
   });
 
@@ -5246,6 +5436,28 @@
 
       try {
           switch (type) {
+              // *** إضافة: حالة جديدة لتحليل بيانات المشروع ***
+              case 'project':
+                const project = state.projects.find(p => p.id === id);
+                if (!project) throw new Error('لم يتم العثور على المشروع.');
+
+                // جمع البيانات المالية للمشروع
+                const clientPayments = state.projectPayments.filter(p => p.projectId === id);
+                const totalReceived = clientPayments.reduce((sum, p) => sum + p.amount, 0);
+                const projectExpenses = state.expenses.filter(e => e.projectId === id);
+                const totalPaidExpenses = projectExpenses.filter(e => e.paymentStatus === 'paid').reduce((sum, e) => sum + e.amount, 0);
+                const netBalance = totalReceived - totalPaidExpenses;
+
+                itemData = {
+                    name: project.name,
+                    budget: project.budget,
+                    totalReceived: totalReceived,
+                    totalPaidExpenses: totalPaidExpenses,
+                    netBalance: netBalance
+                };
+                modalTitle.textContent = `تحليل المشروع: ${project.name}`;
+                prompt = `بصفتك مستشاراً مالياً، حلل بيانات المشروع التالية وقدم ملخصاً واضحاً للحالة المالية، مع تحديد أي مخاطر (مثل تجاوز الميزانية) وتقديم توصية عملية واحدة. البيانات: ${JSON.stringify(itemData, null, 2)}`;
+                break;
               case 'worker':
                 const worker = state.workers.find(w => w.id === id);
                 if (!worker) throw new Error('لم يتم العثور على العامل.');
@@ -5494,16 +5706,35 @@
       }
   }
   // First-time setup
+  // *** تحسين: إضافة معالجة أخطاء احترافية لتهيئة التطبيق ***
   async function initializeApp() {
-      await loadState();
-      
+    try {
+        // محاولة فتح قاعدة البيانات للتحقق من سلامتها
+        // *** تحسين: تعيين isDbOpen إلى true بعد الفتح الناجح ***
+        await db.open();
+        isDbOpen = true; 
 
-    const savedTheme = await db.app_settings.get('selected_theme');
-    const themeToApply = savedTheme ? savedTheme.value : 'default-light';
-    await applyThemeSet(themeToApply);
-    state.active_api_id = (await db.app_settings.get('active_api_id'))?.value || null;
-    state.selected_theme = themeToApply;
-    await renderView(state.currentView.name || 'home', state.currentView.params || {});
+        // تحميل البيانات الأولية وتطبيق الإعدادات
+        await loadState();
+        
+        const savedTheme = await db.app_settings.get('selected_theme');
+        const themeToApply = savedTheme ? savedTheme.value : 'default-light';
+        await applyThemeSet(themeToApply);
+        state.active_api_id = (await db.app_settings.get('active_api_id'))?.value || null;
+        state.selected_theme = themeToApply;
+        
+        // عرض الواجهة الرئيسية
+        await renderView(state.currentView.name || 'home', state.currentView.params || {});
+
+    } catch (error) {
+        console.error("Dexie initialization failed:", error);
+        // عرض رسالة خطأ واضحة للمستخدم في حال فشل التهيئة
+        mainContent.innerHTML = `
+            <div style="text-align: center; padding: 40px 20px;">
+                <h3 style="color: #ef4444;">حدث خطأ فادح أثناء تهيئة قاعدة البيانات.</h3>
+                <p style="color: var(--muted); line-height: 1.6;">قد يكون هذا بسبب تحديث للتطبيق. لحل المشكلة، يرجى محاولة مسح بيانات الموقع من إعدادات المتصفح ثم إعادة تحميل الصفحة.</p>
+            </div>`;
+    }
   }
 
   initializeApp();
