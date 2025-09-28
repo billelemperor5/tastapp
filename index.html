@@ -103,7 +103,10 @@
     justify-content:center; color:white; font-size:20px; margin-bottom: 4px;
   }
 
-  .btn{background:var(--primary);color:white;padding:6px 10px;border-radius:8px;font-weight:700; border:none; cursor:pointer; font-size: 13px; white-space: nowrap; display: inline-flex; align-items: center; justify-content: center;}
+  .btn{background:var(--primary);color:white;padding:6px 10px;border-radius:8px;font-weight:700; border:none; cursor:pointer; font-size: 13px; white-space: nowrap; display: inline-flex; align-items: center; justify-content: center; gap: 6px;}
+  /* *** إضافة: تنسيق جديد للأزرار الأيقونية *** */
+  .btn.icon-btn { width: 40px; height: 40px; border-radius: 50%; padding: 0; font-size: 18px; flex-shrink: 0; }
+  .btn.icon-btn i { margin: 0; }
   .btn.ghost{background:transparent;border:1px solid rgba(0,0,0,.06);color:var(--primary)}
 
   /* --- Navigation Styles (Mobile First) --- */
@@ -1505,9 +1508,9 @@
     const subModulesHTML = subModules.map(createCardHTML).join('');
     
     return `
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px;">
-            <h3 style="margin:0; font-weight:800">ميزات إضافية</h3>
-            <button onclick="renderView('home')" class="btn"><i class="fas fa-arrow-right" style="margin-left: 6px;"></i> العودة للرئيسية</button>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px; gap: 12px;">
+            <button onclick="renderView('home')" class="btn icon-btn" title="العودة للرئيسية"><i class="fas fa-arrow-right"></i></button>
+            <h3 style="margin:0; font-weight:800; text-align: right; flex-grow: 1;">ميزات إضافية</h3>
         </div>
         <div class="grid-cards" style="margin-top:0;">
             ${subModulesHTML}
@@ -1543,11 +1546,11 @@
         : `<p style="text-align:center; color:var(--muted); padding: 20px;">لم يتم إضافة أي مشاريع بعد.</p>`;
 
     return `
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px;">
-            <h3 style="margin:0; font-weight:800">إدارة المشاريع</h3>
-            <div>
-                <button id="addProjectBtn" class="btn" style="margin-left: 8px;"><i class="fas fa-plus" style="margin-left: 6px;"></i> إضافة مشروع</button>
-                <button onclick="renderView('home')" class="btn"><i class="fas fa-arrow-right" style="margin-left: 6px;"></i> العودة</button>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px; gap: 12px;">
+            <button onclick="renderView('home')" class="btn icon-btn" title="العودة للرئيسية"><i class="fas fa-arrow-right"></i></button>
+            <h3 style="margin:0; font-weight:800; text-align: right; flex-grow: 1;">إدارة المشاريع</h3>
+            <div style="display: flex; gap: 8px;">
+                <button id="addProjectBtn" class="btn icon-btn" title="إضافة مشروع"><i class="fas fa-plus"></i></button>
             </div>
         </div>
         ${projectsListHTML}
@@ -1574,11 +1577,11 @@
         : `<p style="text-align:center; color:var(--muted); padding: 20px;">لم يتم إضافة أي موردين بعد.</p>`;
 
     return `
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px;">
-            <h3 style="margin:0; font-weight:800">قائمة الموردين</h3>
-            <div>
-                <button id="addSupplierBtn" class="btn" style="margin-left: 8px;"><i class="fas fa-plus" style="margin-left: 6px;"></i> إضافة مورد</button>
-                <button onclick="renderView('home')" class="btn"><i class="fas fa-arrow-right" style="margin-left: 6px;"></i> العودة</button>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px; gap: 12px;">
+            <button onclick="renderView('home')" class="btn icon-btn" title="العودة للرئيسية"><i class="fas fa-arrow-right"></i></button>
+            <h3 style="margin:0; font-weight:800; text-align: right; flex-grow: 1;">قائمة الموردين</h3>
+            <div style="display: flex; gap: 8px;">
+                <button id="addSupplierBtn" class="btn icon-btn" title="إضافة مورد"><i class="fas fa-plus"></i></button>
             </div>
         </div>
         ${suppliersListHTML}
@@ -1590,9 +1593,9 @@
     if (!supplier) return `<p>لم يتم العثور على المورد.</p><button onclick="renderView('suppliers')">العودة</button>`;
 
     return `
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px;">
-            <h3 style="margin:0; font-weight:800">تفاصيل المورد</h3>
-            <button id="backToSuppliers" class="btn"><i class="fas fa-arrow-right" style="margin-left: 6px;"></i> العودة</button>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px; gap: 12px;">
+            <button id="backToSuppliers" class="btn icon-btn" title="العودة للموردين"><i class="fas fa-arrow-right"></i></button>
+            <h3 style="margin:0; font-weight:800; text-align: right; flex-grow: 1;">تفاصيل المورد</h3>
         </div>
 
         <div class="card" style="cursor:default; transform:none; padding: 20px; align-items: stretch; text-align: right;">
@@ -1606,8 +1609,10 @@
                     <h2 style="margin: 0 0 4px; font-size: 20px;">${supplier.name}</h2>
                     <p style="margin: 0; color: var(--muted); font-size: 14px;">${supplier.specialty || 'تخصص غير محدد'}</p>
                 </div>
-                <button id="editSupplierBtn" data-id="${supplier.id}" class="btn ghost" style="align-self: flex-start;"><i class="fas fa-edit"></i></button>
-                <button id="analyzeSupplierBtn" data-id="${supplier.id}" class="btn ghost" style="align-self: flex-start; color: #0ea5e9; border-color: #0ea5e9; margin-right: 8px;"><i class="fas fa-robot"></i></button>
+                <div style="display: flex; gap: 8px; align-self: flex-start;">
+                    <button id="analyzeSupplierBtn" data-id="${supplier.id}" class="btn icon-btn ghost" title="تحليل بالذكاء الاصطناعي" style="color: #0ea5e9; border-color: #0ea5e9;"><i class="fas fa-robot"></i></button>
+                    <button id="editSupplierBtn" data-id="${supplier.id}" class="btn icon-btn ghost" title="تعديل"><i class="fas fa-edit"></i></button>
+                </div>
             </div>
 
             <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -1658,11 +1663,11 @@
         : `<p style="text-align:center; color:var(--muted); padding: 20px;">لم يتم إضافة أي عمال بعد.</p>`;
 
     return `
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px;">
-            <h3 style="margin:0; font-weight:800">سجل العمال</h3>
-            <div>
-                <button id="addWorkerBtn" class="btn" style="margin-left: 8px;"><i class="fas fa-plus" style="margin-left: 6px;"></i> إضافة عامل</button>
-                <button onclick="renderView('home')" class="btn"><i class="fas fa-arrow-right" style="margin-left: 6px;"></i> العودة</button>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px; gap: 12px;">
+            <button onclick="renderView('home')" class="btn icon-btn" title="العودة للرئيسية"><i class="fas fa-arrow-right"></i></button>
+            <h3 style="margin:0; font-weight:800; text-align: right; flex-grow: 1;">سجل العمال</h3>
+            <div style="display: flex; gap: 8px;">
+                <button id="addWorkerBtn" class="btn icon-btn" title="إضافة عامل"><i class="fas fa-plus"></i></button>
             </div>
         </div>
         ${workersListHTML}
@@ -1712,13 +1717,13 @@
     const activityLogHTML = generateActivityLog(worker, 2, currentYear, currentMonth); // Show only 2 items from the current month
 
     return `
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px;">
-            <h3 style="margin:0; font-weight:800">${worker.name}</h3>
-            <div>
-                <button id="analyzeWorkerBtn" data-id="${worker.id}" class="btn ghost" style="margin-left:8px; color: #0ea5e9; border-color: #0ea5e9;"><i class="fas fa-robot"></i></button>
-                <button id="editWorkerBtn" data-id="${worker.id}" class="btn ghost" style="margin-left:8px;"><i class="fas fa-edit"></i></button>
-                <button id="printReportBtn" data-id="${worker.id}" class="btn ghost" style="margin-left:8px;"><i class="fas fa-print"></i></button>
-                <button id="backToWorkers" class="btn"><i class="fas fa-arrow-right" style="margin-left: 6px;"></i> العودة</button>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px; gap: 12px;">
+            <button id="backToWorkers" class="btn icon-btn" title="العودة للعمال"><i class="fas fa-arrow-right"></i></button>
+            <h3 style="margin:0; font-weight:800; text-align: right; flex-grow: 1;">${worker.name}</h3>
+            <div style="display: flex; gap: 8px;">
+                <button id="analyzeWorkerBtn" data-id="${worker.id}" class="btn icon-btn ghost" title="تحليل بالذكاء الاصطناعي" style="color: #0ea5e9; border-color: #0ea5e9;"><i class="fas fa-robot"></i></button>
+                <button id="editWorkerBtn" data-id="${worker.id}" class="btn icon-btn ghost" title="تعديل"><i class="fas fa-edit"></i></button>
+                <button id="printReportBtn" data-id="${worker.id}" class="btn icon-btn ghost" title="طباعة تقرير"><i class="fas fa-print"></i></button>
             </div>
         </div>
 
@@ -1756,9 +1761,9 @@
 
         <!-- Actions & Activity Log -->
         <div style="margin-bottom: 16px; display:flex; gap:10px;">
-            <button id="addWorkDayBtn" class="btn" style="flex:1; background-color:#10b981;"><i class="fas fa-calendar-check" style="margin-left:6px;"></i> يوم عمل</button>
-            <button id="addBonusBtn" class="btn" style="flex:1; background-color:#3b82f6;"><i class="fas fa-star" style="margin-left:6px;"></i> مكافأة</button>
-            <button id="addDeductionBtn" class="btn" style="flex:1; background-color:#8b5cf6;"><i class="fas fa-hand-holding-usd" style="margin-left:6px;"></i> خصم</button>
+            <button id="addWorkDayBtn" class="btn" style="flex:1; background-color:#10b981;"><i class="fas fa-calendar-check"></i> يوم عمل</button>
+            <button id="addBonusBtn" class="btn" style="flex:1; background-color:#3b82f6;"><i class="fas fa-star"></i> مكافأة</button>
+            <button id="addDeductionBtn" class="btn" style="flex:1; background-color:#8b5cf6;"><i class="fas fa-hand-holding-usd"></i> خصم</button>
         </div>
         
         <h4 style="margin: 24px 0 12px; font-weight:700;">أنشطة الشهر</h4>
@@ -1926,26 +1931,26 @@
     const overviewTabContent = `
         <!-- *** تحسين: إعادة تصميم بطاقات الملخص المالي لعرض 5 قيم *** -->
         <div class="grid-cards" style="grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); margin-top:16px; margin-bottom: 20px;">
-            <div class="card" style="cursor:default; transform:none; text-align:right; align-items:flex-start; padding:8px;">
-                <div style="font-size:11px; color:var(--muted);">الميزانية</div>
-                <div style="font-weight:800; font-size:13px; color:var(--primary);">${budget.toLocaleString()} د.ج</div>
+            <div class="card" style="cursor:default; transform:none; text-align:right; align-items:flex-start; padding:12px;">
+                <div style="font-size:12px; color:var(--muted);">الميزانية</div>
+                <div style="font-weight:800; font-size:16px; color:var(--primary);">${budget.toLocaleString()} د.ج</div>
             </div>
-            <div class="card" style="cursor:default; transform:none; text-align:right; align-items:flex-start; padding:8px;">
-                <div style="font-size:11px; color:var(--muted);">المستلم</div>
-                <div style="font-weight:800; font-size:13px; color:#10b981;">${totalReceived.toLocaleString()} د.ج</div>
+            <div class="card" style="cursor:default; transform:none; text-align:right; align-items:flex-start; padding:12px;">
+                <div style="font-size:12px; color:var(--muted);">المستلم</div>
+                <div style="font-weight:800; font-size:16px; color:#10b981;">${totalReceived.toLocaleString()} د.ج</div>
             </div>
-            <div class="card" style="cursor:default; transform:none; text-align:right; align-items:flex-start; padding:8px;">
+            <div class="card" style="cursor:default; transform:none; text-align:right; align-items:flex-start; padding:12px;">
                 <div style="font-size:12px; color:var(--muted);">إجمالي النفقات</div>
-                <div style="font-weight:800; font-size:13px; color:${budgetExceeded ? '#ef4444' : '#f97316'};">${totalExpenses.toLocaleString()} د.ج</div>
+                <div style="font-weight:800; font-size:16px; color:${budgetExceeded ? '#ef4444' : '#f97316'};">${totalExpenses.toLocaleString()} د.ج</div>
             </div>
-            <div class="card" style="cursor:default; transform:none; text-align:right; align-items:flex-start; padding:8px;">
+            <div class="card" style="cursor:default; transform:none; text-align:right; align-items:flex-start; padding:12px;">
                 <div style="font-size:12px; color:var(--muted);">المتبقي على العميل</div>
-                <div style="font-weight:800; font-size:13px; color:${remainingFromClient >= 0 ? 'var(--muted)' : '#ef4444'};">${remainingFromClient.toLocaleString()} د.ج</div>
+                <div style="font-weight:800; font-size:16px; color:${remainingFromClient >= 0 ? 'var(--muted)' : '#ef4444'};">${remainingFromClient.toLocaleString()} د.ج</div>
             </div>
             <!-- *** إضافة: بطاقة جديدة لعرض الرصيد الصافي (الربح/الخسارة) *** -->
-            <div class="card" style="cursor:default; transform:none; text-align:right; align-items:flex-start; padding:8px; background: linear-gradient(135deg, rgba(168, 85, 247, 0.1), rgba(147, 51, 234, 0.1)); border-color: #a855f7;">
+            <div class="card" style="cursor:default; transform:none; text-align:right; align-items:flex-start; padding:12px; background: linear-gradient(135deg, rgba(168, 85, 247, 0.1), rgba(147, 51, 234, 0.1)); border-color: #a855f7;">
                 <div style="font-size:12px; color:var(--muted);">الرصيد الصافي</div>
-                <div style="font-weight:800; font-size:13px; color:${netBalance >= 0 ? '#a855f7' : '#ef4444'};">${netBalance.toLocaleString()} د.ج</div>
+                <div style="font-weight:800; font-size:16px; color:${netBalance >= 0 ? '#a855f7' : '#ef4444'};">${netBalance.toLocaleString()} د.ج</div>
             </div>
         </div>
         <!-- *** إضافة: عرض معلومات صاحب المنزل وصاحب البناء *** -->
@@ -2013,12 +2018,12 @@
     const financeTabContent = ` 
         <div style="display:flex; justify-content:space-between; align-items:center; margin: 20px 0 12px;">
             <h4 style="margin:0; font-weight:700;">الدفعات المستلمة من العميل</h4>
-            <button id="addProjectPaymentBtn" data-id="${project.id}" class="btn" style="background-color:#10b981;"><i class="fas fa-plus" style="margin-left:6px;"></i> إضافة دفعة</button>
+            <button id="addProjectPaymentBtn" data-id="${project.id}" class="btn icon-btn" title="إضافة دفعة" style="background-color:#10b981;"><i class="fas fa-plus"></i></button>
         </div>
         ${limitedPaymentsHTML}
         <div style="display:flex; justify-content:space-between; align-items:center; margin: 24px 0 12px;">
             <h4 style="margin:0; font-weight:700;">نفقات المشروع</h4>
-            <button data-action="add-expense" data-project-id="${project.id}" class="btn" style="background-color:#ef4444;"><i class="fas fa-plus" style="margin-left:6px;"></i> إضافة نفقة</button>
+            <button data-action="add-expense" data-project-id="${project.id}" class="btn icon-btn" title="إضافة نفقة" style="background-color:#ef4444;"><i class="fas fa-plus"></i></button>
         </div>${limitedExpensesHTML} 
     `;
 
@@ -2052,15 +2057,13 @@
 
     return `
         <!-- *** تحسين: نقل زر التعديل للأعلى وتغيير تصميمه *** -->
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px;">
-            <div style="display: flex; align-items: center;">
-                <h3 style="margin:0 0 4px; font-weight:800; white-space: nowrap;">${project.name}</h3>
-            </div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px; gap: 12px;">
+            <button id="backToProjects" class="btn icon-btn" title="العودة للمشاريع"><i class="fas fa-arrow-right"></i></button>
+            <h3 style="margin:0; font-weight:800; white-space: nowrap; text-align: right; flex-grow: 1;">${project.name}</h3>
             <div style="display: flex; flex-wrap: nowrap; gap: 8px; justify-content: flex-end;">
                 <!-- *** إضافة: زر جديد لتحليل المشروع بالذكاء الاصطناعي *** -->
-                <button id="analyzeProjectBtn" data-id="${project.id}" class="btn ghost" style="margin-left: 8px; color: #0ea5e9; border-color: #0ea5e9;"><i class="fas fa-robot"></i> تحليل</button>
-                <button id="editProjectBtn" data-id="${project.id}" class="btn ghost" style="margin-left: 8px; color: var(--primary); border-color: var(--primary);"><i class="fas fa-edit" style="margin-left:6px;"></i> تعديل</button>
-                <button id="backToProjects" class="btn"><i class="fas fa-arrow-right" style="margin-left: 6px;"></i> العودة للمشاريع</button>
+                <button id="analyzeProjectBtn" data-id="${project.id}" class="btn icon-btn ghost" title="تحليل بالذكاء الاصطناعي" style="color: #0ea5e9; border-color: #0ea5e9;"><i class="fas fa-robot"></i></button>
+                <button id="editProjectBtn" data-id="${project.id}" class="btn icon-btn ghost" title="تعديل المشروع" style="color: var(--primary); border-color: var(--primary);"><i class="fas fa-edit"></i></button>
             </div>
         </div>
 
@@ -2263,8 +2266,8 @@
 
   function getCalendarView() {
     const today = new Date();
-    const currentMonth = state.currentView.params.month === undefined ? today.getMonth() : state.currentView.params.month;
-    const currentYear = state.currentView.params.year === undefined ? today.getFullYear() : state.currentView.params.year;
+    const currentMonth = state.currentView.params.month ?? today.getMonth();
+    const currentYear = state.currentView.params.year ?? today.getFullYear();
 
     const prevMonth = new Date(currentYear, currentMonth - 1, 1);
     const nextMonth = new Date(currentYear, currentMonth + 1, 1);
@@ -2316,11 +2319,11 @@
     }
 
     return `
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px;">
-            <h3 style="margin:0; font-weight:800">الجدول الزمني</h3>
-            <div>
-                <button id="addEventBtn" class="btn" style="margin-left: 8px;"><i class="fas fa-plus" style="margin-left: 6px;"></i> إضافة حدث</button>
-                <button onclick="renderView('more_features')" class="btn"><i class="fas fa-arrow-right" style="margin-left: 6px;"></i> العودة</button>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px; gap: 12px;">
+            <button onclick="renderView('more_features')" class="btn icon-btn" title="العودة"><i class="fas fa-arrow-right"></i></button>
+            <h3 style="margin:0; font-weight:800; text-align: right; flex-grow: 1;">الجدول الزمني</h3>
+            <div style="display: flex; gap: 8px;">
+                <button id="addEventBtn" class="btn icon-btn" title="إضافة حدث"><i class="fas fa-plus"></i></button>
             </div>
         </div>
 
@@ -2344,9 +2347,9 @@
 
   function getReportsView() { 
     return `
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px;">
-            <h3 style="margin:0; font-weight:800">تقارير سريعة (قيد الإنشاء)</h3>
-            <button onclick="renderView('home')" class="btn"><i class="fas fa-arrow-right" style="margin-left: 6px;"></i> العودة</button>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px; gap: 12px;">
+            <button onclick="renderView('home')" class="btn icon-btn" title="العودة للرئيسية"><i class="fas fa-arrow-right"></i></button>
+            <h3 style="margin:0; font-weight:800; text-align: right; flex-grow: 1;">تقارير سريعة (قيد الإنشاء)</h3>
         </div>`; 
   }
   
@@ -2421,11 +2424,11 @@
         : `<p style="text-align:center; color:var(--muted); padding: 20px;">لا توجد مصاريف مسجلة لهذا الشهر.</p>`;
 
     return `
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px;">
-            <h3 style="margin:0; font-weight:800">إدارة النفقات</h3>
-            <div>
-                <button data-action="add-expense" class="btn" style="margin-left: 8px;"><i class="fas fa-plus" style="margin-left: 6px;"></i> إضافة نفقة</button>
-                <button onclick="renderView('home')" class="btn"><i class="fas fa-arrow-right" style="margin-left: 6px;"></i> العودة</button>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px; gap: 12px;">
+            <button onclick="renderView('home')" class="btn icon-btn" title="العودة للرئيسية"><i class="fas fa-arrow-right"></i></button>
+            <h3 style="margin:0; font-weight:800; text-align: right; flex-grow: 1;">إدارة النفقات</h3>
+            <div style="display: flex; gap: 8px;">
+                <button data-action="add-expense" class="btn icon-btn" title="إضافة نفقة"><i class="fas fa-plus"></i></button>
             </div>
         </div>
 
@@ -2472,18 +2475,15 @@
     const supplier = expense.supplierId ? state.suppliers.find(s => s.id === expense.supplierId) : null;
 
     return `
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px;">
-            <h3 style="margin:0; font-weight:800">تفاصيل النفقة</h3>
-            <div>
-                <!-- *** تحسين: زر العودة الذكي *** -->
-                <button onclick="goBackToPreviousView()" class="btn"><i class="fas fa-arrow-right" style="margin-left: 6px;"></i> العودة</button>
-            </div>
-        </div>
-        <div class="form-actions" style="margin-bottom: 16px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px; gap: 12px;">
+            <!-- *** تحسين: زر العودة الذكي *** -->
+            <button onclick="goBackToPreviousView()" class="btn icon-btn" title="العودة"><i class="fas fa-arrow-right"></i></button>
+            <h3 style="margin:0; font-weight:800; text-align: right; flex-grow: 1;">تفاصيل النفقة</h3>
+            <div class="form-actions" style="margin: 0; padding: 0;">
                 <!-- *** إصلاح: إضافة data-action ليعمل الزر مع Event Delegation وإزالة الـ ID غير الضروري *** -->
-                <button data-action="edit-expense" data-id="${expense.id}" class="btn ghost" style="flex: 1;"><i class="fas fa-edit" style="margin-left: 8px;"></i> تعديل</button>
-                <button id="analyzeExpenseBtn" data-id="${expense.id}" class="btn ghost" style="margin-left:8px; color: #0ea5e9; border-color: #0ea5e9;"><i class="fas fa-robot"></i></button>
-                <button id="printExpenseBtn" data-id="${expense.id}" class="btn ghost" style="margin-left:8px;"><i class="fas fa-print"></i></button>
+                <button data-action="edit-expense" data-id="${expense.id}" class="btn icon-btn ghost" title="تعديل"><i class="fas fa-edit"></i></button>
+                <button id="analyzeExpenseBtn" data-id="${expense.id}" class="btn icon-btn ghost" title="تحليل" style="color: #0ea5e9; border-color: #0ea5e9;"><i class="fas fa-robot"></i></button>
+                <button id="printExpenseBtn" data-id="${expense.id}" class="btn icon-btn ghost" title="طباعة"><i class="fas fa-print"></i></button>
             </div>
         </div>
 
@@ -2566,11 +2566,11 @@
         : `<p style="text-align:center; color:var(--muted); padding: 20px;">لا توجد أدوات في المخزون بعد.</p>`;
 
     return `
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px;">
-            <h3 style="margin:0; font-weight:800">مخزون الأدوات</h3>
-            <div>
-                <button id="addInventoryBtn" class="btn" style="margin-left: 8px;"><i class="fas fa-plus" style="margin-left: 6px;"></i> إضافة أداة</button> 
-                <button onclick="renderView('home')" class="btn"><i class="fas fa-arrow-right" style="margin-left: 6px;"></i> العودة</button>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px; gap: 12px;">
+            <button onclick="renderView('home')" class="btn icon-btn" title="العودة للرئيسية"><i class="fas fa-arrow-right"></i></button>
+            <h3 style="margin:0; font-weight:800; text-align: right; flex-grow: 1;">مخزون الأدوات</h3>
+            <div style="display: flex; gap: 8px;">
+                <button id="addInventoryBtn" class="btn icon-btn" title="إضافة أداة"><i class="fas fa-plus"></i></button> 
             </div>
         </div>
         ${inventoryListHTML}
@@ -2595,9 +2595,9 @@
     }
 
     return `
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px;">
-            <h3 style="margin:0; font-weight:800">تفاصيل الأداة</h3>
-            <button id="backToInventory" class="btn"><i class="fas fa-arrow-right" style="margin-left: 6px;"></i> العودة</button>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px; gap: 12px;">
+            <button id="backToInventory" class="btn icon-btn" title="العودة للمخزون"><i class="fas fa-arrow-right"></i></button>
+            <h3 style="margin:0; font-weight:800; text-align: right; flex-grow: 1;">تفاصيل الأداة</h3>
         </div>
 
         <div class="card" style="cursor:default; transform:none; padding: 20px; align-items: stretch; text-align: right;">
@@ -2610,8 +2610,10 @@
                     <h2 style="margin: 0 0 4px; font-size: 20px;">${item.name}</h2>
                     <p style="margin: 0; color: var(--muted); font-size: 14px;">الكمية: ${item.quantity || 1}</p>
                 </div>
-                <button id="editInventoryBtn" data-id="${item.id}" class="btn ghost" style="align-self: flex-start;"><i class="fas fa-edit"></i></button>
-                <button id="analyzeInventoryBtn" data-id="${item.id}" class="btn ghost" style="align-self: flex-start; color: #0ea5e9; border-color: #0ea5e9; margin-right: 8px;"><i class="fas fa-robot"></i></button>
+                <div style="display: flex; gap: 8px; align-self: flex-start;">
+                    <button id="analyzeInventoryBtn" data-id="${item.id}" class="btn icon-btn ghost" title="تحليل" style="color: #0ea5e9; border-color: #0ea5e9;"><i class="fas fa-robot"></i></button>
+                    <button id="editInventoryBtn" data-id="${item.id}" class="btn icon-btn ghost" title="تعديل"><i class="fas fa-edit"></i></button>
+                </div>
             </div>
 
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
@@ -2656,9 +2658,9 @@
         });
     });
     return `
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px;">
-            <h3 style="margin:0; font-weight:800">ملاحظات سريعة</h3>
-            <button onclick="renderView('more_features')" class="btn"><i class="fas fa-arrow-right" style="margin-left: 6px;"></i> العودة</button>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px; gap: 12px;">
+            <button onclick="renderView('more_features')" class="btn icon-btn" title="العودة"><i class="fas fa-arrow-right"></i></button>
+            <h3 style="margin:0; font-weight:800; text-align: right; flex-grow: 1;">ملاحظات سريعة</h3>
         </div>
         
         <!-- Inline Note Form -->
@@ -2688,9 +2690,9 @@
   function getSettingsView() {
     const isDark = document.body.classList.contains('dark');
     return `
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px;">
-            <h3 style="margin:0; font-weight:800">الإعدادات</h3>
-            <button onclick="renderView('home')" class="btn"><i class="fas fa-arrow-right" style="margin-left: 6px;"></i> العودة</button>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px; gap: 12px;">
+            <button onclick="renderView('home')" class="btn icon-btn" title="العودة للرئيسية"><i class="fas fa-arrow-right"></i></button>
+            <h3 style="margin:0; font-weight:800; text-align: right; flex-grow: 1;">الإعدادات</h3>
         </div>
         <div id="navigateToThemes" class="card" style="align-items:flex-start; text-align:right; flex-direction: row; justify-content: space-between; margin-bottom: 12px;">
             <div style="display:flex; justify-content:space-between; align-items:center; width: 100%;">
@@ -2792,11 +2794,11 @@
     `;
 
     return `
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px;">
-            <h3 style="margin:0; font-weight:800">سجل الديون والأقساط</h3>
-            <div>
-                <button onclick="openDebtModal()" class="btn" style="margin-left: 8px;"><i class="fas fa-plus" style="margin-left: 6px;"></i> دين جديد</button>
-                <button onclick="renderView('more_features')" class="btn"><i class="fas fa-arrow-right" style="margin-left: 6px;"></i> العودة</button>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px; gap: 12px;">
+            <button onclick="renderView('more_features')" class="btn icon-btn" title="العودة"><i class="fas fa-arrow-right"></i></button>
+            <h3 style="margin:0; font-weight:800; text-align: right; flex-grow: 1;">سجل الديون والأقساط</h3>
+            <div style="display: flex; gap: 8px;">
+                <button onclick="openDebtModal()" class="btn icon-btn" title="إضافة دين جديد"><i class="fas fa-plus"></i></button>
             </div>
         </div>
 
@@ -2842,12 +2844,12 @@
         : `<p style="text-align:center; color:var(--muted); padding: 20px;">لا توجد دفعات مسجلة لهذا الدين.</p>`;
 
     return `
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px;">
-            <h3 style="margin:0; font-weight:800">تفاصيل دين: ${debt.person}</h3> 
-            <div>
-                <button id="analyzeDebtBtn" data-id="${debt.id}" class="btn ghost" style="margin-left:8px; color: #0ea5e9; border-color: #0ea5e9;"><i class="fas fa-robot"></i> تحليل</button>
-                <button id="editDebtBtn" data-id="${debt.id}" class="btn ghost" style="margin-left:8px;"><i class="fas fa-edit"></i> تعديل</button>
-                <button id="backToDebts" class="btn"><i class="fas fa-arrow-right" style="margin-left: 6px;"></i> العودة</button>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px; gap: 12px;">
+            <button id="backToDebts" class="btn icon-btn" title="العودة للديون"><i class="fas fa-arrow-right"></i></button>
+            <h3 style="margin:0; font-weight:800; text-align: right; flex-grow: 1;">دين: ${debt.person}</h3> 
+            <div style="display: flex; gap: 8px;">
+                <button id="analyzeDebtBtn" data-id="${debt.id}" class="btn icon-btn ghost" title="تحليل" style="color: #0ea5e9; border-color: #0ea5e9;"><i class="fas fa-robot"></i></button>
+                <button id="editDebtBtn" data-id="${debt.id}" class="btn icon-btn ghost" title="تعديل"><i class="fas fa-edit"></i></button>
             </div>
         </div>
 
@@ -2881,7 +2883,7 @@
         <!-- Actions & Activity Log -->
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px;">
             <h4 style="margin:0; font-weight:700;">سجل الدفعات</h4>
-            <button id="addDebtPaymentBtn" data-id="${debt.id}" class="btn" style="background-color:#10b981;"><i class="fas fa-plus" style="margin-left:6px;"></i> تسجيل دفعة</button>
+            <button id="addDebtPaymentBtn" data-id="${debt.id}" class="btn icon-btn" title="تسجيل دفعة" style="background-color:#10b981;"><i class="fas fa-plus"></i></button>
         </div>
         <div id="debtPaymentsLog">
             ${paymentsHTML}
@@ -2915,11 +2917,11 @@
       : `<p style="text-align:center; color:var(--muted); padding: 20px;">لم تقم بإضافة أي إعدادات API بعد.</p>`;
 
     return `
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px;">
-            <h3 style="margin:0; font-weight:800">إعدادات الذكاء الاصطناعي</h3>
-            <div>
-                <button id="addApiConfigBtn" class="btn" style="margin-left: 8px;"><i class="fas fa-plus" style="margin-left: 6px;"></i> إضافة API</button>
-                <button onclick="renderView('settings')" class="btn"><i class="fas fa-arrow-right" style="margin-left: 6px;"></i> العودة</button>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px; gap: 12px;">
+            <button onclick="renderView('settings')" class="btn icon-btn" title="العودة للإعدادات"><i class="fas fa-arrow-right"></i></button>
+            <h3 style="margin:0; font-weight:800; text-align: right; flex-grow: 1;">إعدادات الذكاء الاصطناعي</h3>
+            <div style="display: flex; gap: 8px;">
+                <button id="addApiConfigBtn" class="btn icon-btn" title="إضافة API"><i class="fas fa-plus"></i></button>
             </div>
         </div>
         ${apiListHTML}
@@ -2951,9 +2953,9 @@
     const darkThemesHTML = Object.keys(themes).filter(key => themes[key].type === 'dark').map(createThemeCard).join('');
 
     return `
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px;">
-            <h3 style="margin:0; font-weight:800">تخصيص الثيمات</h3>
-            <button onclick="renderView('settings')" class="btn"><i class="fas fa-arrow-right" style="margin-left: 6px;"></i> العودة للإعدادات</button>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px; gap: 12px;">
+            <button onclick="renderView('settings')" class="btn icon-btn" title="العودة للإعدادات"><i class="fas fa-arrow-right"></i></button>
+            <h3 style="margin:0; font-weight:800; text-align: right; flex-grow: 1;">تخصيص الثيمات</h3>
         </div>
 
         <h4 style="margin: 24px 0 12px; font-weight:700;">الثيمات الفاتحة</h4>
@@ -3019,9 +3021,9 @@
   
   function getFactoryResetView() {
     return `
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px;">
-            <h3 style="margin:0; font-weight:800; color: #ef4444;">إعادة ضبط المصنع</h3>
-            <button onclick="renderView('settings')" class="btn"><i class="fas fa-arrow-right" style="margin-left: 6px;"></i> العودة للإعدادات</button>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px; gap: 12px;">
+            <button onclick="renderView('settings')" class="btn icon-btn" title="العودة للإعدادات"><i class="fas fa-arrow-right"></i></button>
+            <h3 style="margin:0; font-weight:800; color: #ef4444; text-align: right; flex-grow: 1;">إعادة ضبط المصنع</h3>
         </div>
 
         <div class="card" style="cursor:default; transform:none; padding: 20px; align-items: center; text-align: center; border-color: #ef4444;">
@@ -3031,7 +3033,7 @@
                 أنت على وشك حذف جميع البيانات المخزنة في التطبيق بشكل نهائي، بما في ذلك العمال، المشاريع، الملاحظات، وجميع الإعدادات الأخرى.
                 لا يمكن استرجاع هذه البيانات بعد الحذف.
             </p>
-            <button id="factoryResetBtn" class="btn" style="background-color: #ef4444; padding: 10px 24px; font-size: 16px;">
+            <button id="factoryResetBtn" class="btn" style="background-color: #ef4444; padding: 10px 24px; font-size: 16px; gap: 8px;">
                 <i class="fas fa-trash-alt" style="margin-left: 8px;"></i> نعم، أفهم وأريد الحذف
             </button>
         </div>
@@ -3071,9 +3073,9 @@
     `;
 
     return `
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px;">
-            <h3 style="margin:0; font-weight:800">حول التطبيق</h3>
-            <button onclick="renderView('home')" class="btn"><i class="fas fa-arrow-right" style="margin-left: 6px;"></i> العودة</button>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px; gap: 12px;">
+            <button onclick="renderView('home')" class="btn icon-btn" title="العودة للرئيسية"><i class="fas fa-arrow-right"></i></button>
+            <h3 style="margin:0; font-weight:800; text-align: right; flex-grow: 1;">حول التطبيق</h3>
         </div>
         ${appInfo}${devInfo}`;
   }
@@ -3098,11 +3100,11 @@
         : `<p style="text-align:center; color:var(--muted); padding: 20px;">لم تقم بإنشاء أي ملفات تعريفية بعد.</p>`;
 
     return `
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px;">
-            <h3 style="margin:0; font-weight:800">ملفاتي التعريفية</h3>
-            <div>
-                <button id="addProfileBtn" class="btn" style="margin-left: 8px;"><i class="fas fa-plus" style="margin-left: 6px;"></i> إضافة ملف</button>
-                <button onclick="renderView('more_features')" class="btn"><i class="fas fa-arrow-right" style="margin-left: 6px;"></i> العودة</button>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px; gap: 12px;">
+            <button onclick="renderView('more_features')" class="btn icon-btn" title="العودة"><i class="fas fa-arrow-right"></i></button>
+            <h3 style="margin:0; font-weight:800; text-align: right; flex-grow: 1;">ملفاتي التعريفية</h3>
+            <div style="display: flex; gap: 8px;">
+                <button id="addProfileBtn" class="btn icon-btn" title="إضافة ملف"><i class="fas fa-plus"></i></button>
             </div>
         </div>
         ${profilesListHTML}
@@ -3114,13 +3116,13 @@
     if (!profile) return `<p>لم يتم العثور على الملف التعريفي.</p><button id="backToProfiles">العودة</button>`;
 
     return `
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px;">
-            <h3 style="margin:0; font-weight:800">تفاصيل الملف</h3>
-            <div>
-                <button id="analyzeProfileBtn" data-id="${profile.id}" class="btn ghost" style="margin-left:8px; color: #0ea5e9; border-color: #0ea5e9;"><i class="fas fa-robot"></i></button>
-                <button id="editProfileBtn" data-id="${profile.id}" class="btn ghost" style="margin-left:8px;"><i class="fas fa-edit"></i></button>
-                <button id="saveProfileAsImageBtn" data-id="${profile.id}" class="btn ghost" style="margin-left:8px;"><i class="fas fa-camera"></i></button>
-                <button id="backToProfiles" class="btn"><i class="fas fa-arrow-right" style="margin-left: 6px;"></i> العودة</button>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px; gap: 12px;">
+            <button id="backToProfiles" class="btn icon-btn" title="العودة للملفات"><i class="fas fa-arrow-right"></i></button>
+            <h3 style="margin:0; font-weight:800; text-align: right; flex-grow: 1;">تفاصيل الملف</h3>
+            <div style="display: flex; gap: 8px;">
+                <button id="analyzeProfileBtn" data-id="${profile.id}" class="btn icon-btn ghost" title="تحليل" style="color: #0ea5e9; border-color: #0ea5e9;"><i class="fas fa-robot"></i></button>
+                <button id="editProfileBtn" data-id="${profile.id}" class="btn icon-btn ghost" title="تعديل"><i class="fas fa-edit"></i></button>
+                <button id="saveProfileAsImageBtn" data-id="${profile.id}" class="btn icon-btn ghost" title="حفظ كصورة"><i class="fas fa-camera"></i></button>
             </div>
         </div>
 
