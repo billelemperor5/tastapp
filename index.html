@@ -103,7 +103,7 @@
     justify-content:center; color:white; font-size:20px; margin-bottom: 4px;
   }
 
-  .btn{background:var(--primary);color:white;padding:4px 8px;border-radius:8px;font-weight:700; border:none; cursor:pointer; font-size: 12px;}
+  .btn{background:var(--primary);color:white;padding:3px 7px;border-radius:8px;font-weight:700; border:none; cursor:pointer; font-size: 11px; white-space: nowrap; display: inline-flex; align-items: center; justify-content: center;}
   .btn.ghost{background:transparent;border:1px solid rgba(0,0,0,.06);color:var(--primary)}
 
   /* --- Navigation Styles (Mobile First) --- */
@@ -1926,26 +1926,26 @@
     const overviewTabContent = `
         <!-- *** تحسين: إعادة تصميم بطاقات الملخص المالي لعرض 5 قيم *** -->
         <div class="grid-cards" style="grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); margin-top:16px; margin-bottom: 20px;">
-            <div class="card" style="cursor:default; transform:none; text-align:right; align-items:flex-start; padding:10px;">
-                <div style="font-size:12px; color:var(--muted);">الميزانية</div>
-                <div style="font-weight:800; font-size:14px; color:var(--primary);">${budget.toLocaleString()} د.ج</div>
+            <div class="card" style="cursor:default; transform:none; text-align:right; align-items:flex-start; padding:8px;">
+                <div style="font-size:11px; color:var(--muted);">الميزانية</div>
+                <div style="font-weight:800; font-size:13px; color:var(--primary);">${budget.toLocaleString()} د.ج</div>
             </div>
-            <div class="card" style="cursor:default; transform:none; text-align:right; align-items:flex-start; padding:10px;">
-                <div style="font-size:12px; color:var(--muted);">المستلم</div>
-                <div style="font-weight:800; font-size:14px; color:#10b981;">${totalReceived.toLocaleString()} د.ج</div>
+            <div class="card" style="cursor:default; transform:none; text-align:right; align-items:flex-start; padding:8px;">
+                <div style="font-size:11px; color:var(--muted);">المستلم</div>
+                <div style="font-weight:800; font-size:13px; color:#10b981;">${totalReceived.toLocaleString()} د.ج</div>
             </div>
-            <div class="card" style="cursor:default; transform:none; text-align:right; align-items:flex-start; padding:10px;">
-                <div style="font-size:13px; color:var(--muted);">إجمالي النفقات</div>
-                <div style="font-weight:800; font-size:14px; color:${budgetExceeded ? '#ef4444' : '#f97316'};">${totalExpenses.toLocaleString()} د.ج</div>
+            <div class="card" style="cursor:default; transform:none; text-align:right; align-items:flex-start; padding:8px;">
+                <div style="font-size:12px; color:var(--muted);">إجمالي النفقات</div>
+                <div style="font-weight:800; font-size:13px; color:${budgetExceeded ? '#ef4444' : '#f97316'};">${totalExpenses.toLocaleString()} د.ج</div>
             </div>
-            <div class="card" style="cursor:default; transform:none; text-align:right; align-items:flex-start; padding:10px;">
-                <div style="font-size:13px; color:var(--muted);">المتبقي على العميل</div>
-                <div style="font-weight:800; font-size:14px; color:${remainingFromClient >= 0 ? 'var(--muted)' : '#ef4444'};">${remainingFromClient.toLocaleString()} د.ج</div>
+            <div class="card" style="cursor:default; transform:none; text-align:right; align-items:flex-start; padding:8px;">
+                <div style="font-size:12px; color:var(--muted);">المتبقي على العميل</div>
+                <div style="font-weight:800; font-size:13px; color:${remainingFromClient >= 0 ? 'var(--muted)' : '#ef4444'};">${remainingFromClient.toLocaleString()} د.ج</div>
             </div>
             <!-- *** إضافة: بطاقة جديدة لعرض الرصيد الصافي (الربح/الخسارة) *** -->
-            <div class="card" style="cursor:default; transform:none; text-align:right; align-items:flex-start; padding:10px; background: linear-gradient(135deg, rgba(168, 85, 247, 0.1), rgba(147, 51, 234, 0.1)); border-color: #a855f7;">
-                <div style="font-size:13px; color:var(--muted);">الرصيد الصافي</div>
-                <div style="font-weight:800; font-size:14px; color:${netBalance >= 0 ? '#a855f7' : '#ef4444'};">${netBalance.toLocaleString()} د.ج</div>
+            <div class="card" style="cursor:default; transform:none; text-align:right; align-items:flex-start; padding:8px; background: linear-gradient(135deg, rgba(168, 85, 247, 0.1), rgba(147, 51, 234, 0.1)); border-color: #a855f7;">
+                <div style="font-size:12px; color:var(--muted);">الرصيد الصافي</div>
+                <div style="font-weight:800; font-size:13px; color:${netBalance >= 0 ? '#a855f7' : '#ef4444'};">${netBalance.toLocaleString()} د.ج</div>
             </div>
         </div>
         <!-- *** إضافة: عرض معلومات صاحب المنزل وصاحب البناء *** -->
@@ -2054,7 +2054,7 @@
         <!-- *** تحسين: نقل زر التعديل للأعلى وتغيير تصميمه *** -->
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px;">
             <div style="display: flex; align-items: center;">
-                <h3 style="margin:0 0 4px; font-weight:800">${project.name}</h3>
+                <h3 style="margin:0 0 4px; font-weight:800; white-space: nowrap;">${project.name}</h3>
             </div>
             <div style="display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end;">
                 <!-- *** إضافة: زر جديد لتحليل المشروع بالذكاء الاصطناعي *** -->
