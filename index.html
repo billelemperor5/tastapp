@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -12,6 +14,10 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
 <!-- Dexie.js (for IndexedDB) -->
 <script src="https://unpkg.com/dexie@latest/dist/dexie.js"></script>
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
 <!-- html2canvas.js (for creating images from HTML) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <!-- Marked.js (for rendering Markdown from AI) -->
@@ -597,7 +603,9 @@
                 <div style="font-size:13px;color:var(--muted)">مدير الديكور الخاص بك</div>
                 </div>
             </div>
-            <div style="display:flex;gap:8px;align-items:center"><button id="themeToggleHeader" class="btn ghost" title="تبديل الوضع"><i class="fas fa-moon"></i></button>
+            <div style="display:flex;gap:8px;align-items:center">
+                <button id="logoutBtn" class="btn icon-btn ghost" title="تسجيل الخروج" style="color: #ef4444; border-color: transparent;"><i class="fas fa-sign-out-alt"></i></button>
+                <button id="themeToggleHeader" class="btn icon-btn ghost" title="تبديل الوضع"><i class="fas fa-moon"></i></button>
             </div>
         </header>
 
@@ -1063,6 +1071,21 @@
   // 1. CONFIGURATION & APP STATE
   // =================================================================
   
+  // Your web app's Firebase configuration
+  const firebaseConfig = {
+      apiKey: "AIzaSyC52e_whkQh-vwgdwuuzl4wMpVxILXGkSQ",
+      authDomain: "shoes-manager-pro.firebaseapp.com",
+      projectId: "shoes-manager-pro",
+      storageBucket: "shoes-manager-pro.firebasestorage.app",
+      messagingSenderId: "951149272003",
+      appId: "1:951149272003:web:85d665da99166298047b76"
+  };
+
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const firestore = firebase.firestore(); // Initialize Firestore
+
   // --- Database Setup (Dexie.js) ---
   const db = new Dexie('decorManagerDB');
   // *** إضافة: جدول جديد للديون ورفع إصدار قاعدة البيانات ***
@@ -1191,6 +1214,7 @@
   const app = document.getElementById('app');
   const themeToggleHeader = document.getElementById('themeToggleHeader');
   const mainContent = document.getElementById('mainContent');
+  const logoutBtn = document.getElementById('logoutBtn');
   const mainNav = document.getElementById('mainNav');
   
   // =================================================================
@@ -1331,6 +1355,24 @@
             document.getElementById('navigateToThemes')?.addEventListener('click', () => renderView('themes'));
             document.getElementById('navigateToFactoryReset')?.addEventListener('click', () => renderView('factory_reset'));
             document.getElementById('navigateToBackupRestore')?.addEventListener('click', () => renderView('backup_restore'));
+        }
+        if (viewName === 'backup_restore') {
+            // After rendering the backup view, fetch the last backup date
+            const user = auth.currentUser;
+            if (user) {
+                firestore.collection('backups').doc(user.uid).get().then(doc => {
+                    const infoEl = document.getElementById('lastBackupInfo');
+                    const restoreBtn = document.getElementById('restoreBtn');
+                    if (doc.exists && infoEl) {
+                        const timestamp = doc.data().backupTimestamp;
+                        const date = timestamp ? timestamp.toDate() : null;
+                        infoEl.textContent = `آخر نسخة احتياطية: ${date ? date.toLocaleString('ar-DZ') : 'غير معروف'}`;
+                        if(restoreBtn) restoreBtn.disabled = false;
+                    } else if (infoEl) {
+                        infoEl.textContent = 'لم يتم العثور على نسخة احتياطية في السحابة.';
+                    }
+                });
+            }
         }
         if (viewName === 'api_settings') {
             document.getElementById('addApiConfigBtn')?.addEventListener('click', () => openApiConfigModal());
@@ -2992,79 +3034,126 @@
 
   // *** إضافة: واجهة النسخ الاحتياطي والاستعادة ***
   function getBackupRestoreView() {
+    // We will fetch the last backup date later and update the DOM
     return `
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px; gap: 12px;">
             <button onclick="renderView('settings')" class="btn icon-btn" title="العودة للإعدادات"><i class="fas fa-arrow-right"></i></button>
             <h3 style="margin:0; font-weight:800; text-align: right; flex-grow: 1;">النسخ الاحتياطي والاستعادة</h3>
         </div>
 
-        <div class="card" style="cursor:default; transform:none; padding: 20px; align-items: stretch; text-align: right; margin-bottom: 20px;">
-            <h4 style="margin: 0 0 8px; font-size: 16px;">تصدير البيانات</h4>
+        <div class="card" style="cursor:default; transform:none; padding: 20px; align-items: stretch; text-align: right; margin-bottom: 20px; border-top: 2px solid var(--primary);">
+            <h4 style="margin: 0 0 8px; font-size: 16px;">حفظ نسخة احتياطية في السحابة</h4>
             <p style="color: var(--muted); line-height: 1.6; margin: 0 0 16px;">
-                قم بإنشاء نسخة احتياطية من جميع بياناتك (المشاريع، العمال، النفقات، إلخ) في ملف واحد. احتفظ بهذا الملف في مكان آمن.
+                حفظ جميع بياناتك (المشاريع، العمال، إلخ) بأمان في حسابك على Firebase. يمكنك استعادتها في أي وقت وعلى أي جهاز.
             </p>
-            <button onclick="handleBackupData()" class="btn" style="background-color: #10b981; width: 100%;"><i class="fas fa-download" style="margin-left: 8px;"></i> تصدير البيانات الآن</button>
+            <button onclick="handleCloudBackup()" class="btn" style="background-color: #10b981; width: 100%;"><i class="fas fa-cloud-upload-alt" style="margin-left: 8px;"></i> حفظ البيانات الآن</button>
         </div>
 
         <div class="card" style="cursor:default; transform:none; padding: 20px; align-items: stretch; text-align: right; border-top: 2px solid #f59e0b;">
-            <h4 style="margin: 0 0 8px; font-size: 16px;">استيراد البيانات</h4>
+            <h4 style="margin: 0 0 8px; font-size: 16px;">استعادة البيانات من السحابة</h4>
             <p style="color: var(--muted); line-height: 1.6; margin: 0 0 16px;">
-                سيتم دمج البيانات من الملف مع بياناتك الحالية. السجلات الجديدة ستُضاف والسجلات القديمة ستُحدّث.
+                سيتم دمج آخر نسخة احتياطية محفوظة مع بياناتك الحالية. السجلات الجديدة ستُضاف والسجلات القديمة ستُحدّث.
             </p>
-            <button onclick="document.getElementById('restoreFileInput').click()" class="btn" style="background-color: #f59e0b; width: 100%;"><i class="fas fa-upload" style="margin-left: 8px;"></i> استيراد البيانات من ملف</button>
-            <input type="file" id="restoreFileInput" accept=".json" style="display: none;" onchange="handleRestoreData(event)">
+            <div id="lastBackupInfo" style="font-size: 13px; color: var(--muted); text-align: center; margin-bottom: 12px; background: var(--bg); padding: 8px; border-radius: 6px;">
+                جاري البحث عن نسخة احتياطية...
+            </div>
+            <button id="restoreBtn" onclick="handleCloudRestore()" class="btn" style="background-color: #f59e0b; width: 100%;" disabled><i class="fas fa-cloud-download-alt" style="margin-left: 8px;"></i> استعادة البيانات الآن</button>
         </div>
     `;
   }
 
-  // *** إضافة: منطق النسخ الاحتياطي ***
-  async function handleBackupData() {
-    try {
-        showToast('جاري تجهيز النسخة الاحتياطية...');
-        const backupData = {};
-        for (const table of db.tables) {
-            backupData[table.name] = await table.toArray();
-        }
-
-        const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `decor-manager-backup-${new Date().toISOString().split('T')[0]}.json`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        showToast('تم تحميل النسخة الاحتياطية بنجاح.');
-    } catch (error) {
-        console.error("Backup failed:", error);
-        showCustomToast('فشل إنشاء النسخة الاحتياطية.', 'error');
+  // *** تعديل: منطق النسخ الاحتياطي للسحابة ***
+  async function handleCloudBackup() {
+    const user = auth.currentUser;
+    if (!user) {
+        showCustomToast('يجب أن تكون مسجلاً للدخول.', 'error');
+        return;
     }
+
+    openConfirmModal('هل تريد حفظ نسخة احتياطية من بياناتك الحالية في السحابة؟', async () => {
+        closeConfirmModal();
+        showToast('جاري حفظ النسخة الاحتياطية...');
+        try {
+            const backupData = {
+                backupTimestamp: firebase.firestore.FieldValue.serverTimestamp()
+            };
+            // Iterate over all tables in the database
+            for (const table of db.tables) {
+                // We don't backup settings or image data
+                if (table.name !== 'app_settings') {
+                    let tableData = await table.toArray();
+
+                    // *** إضافة: استثناء حقول الصور من النسخ الاحتياطي ***
+                    const imageFieldsToExclude = {
+                        workers: 'imageUrl',
+                        suppliers: 'imageUrl',
+                        inventory: 'imageUrl',
+                        companyProfiles: 'logoUrl',
+                        expenses: 'receiptUrl'
+                    };
+
+                    const fieldToExclude = imageFieldsToExclude[table.name];
+                    if (fieldToExclude) {
+                        // إنشاء نسخة جديدة من البيانات بدون حقل الصورة
+                        tableData = tableData.map(item => {
+                            const { [fieldToExclude]: _, ...rest } = item; // استثناء الحقل المحدد
+                            return rest;
+                        });
+                    }
+                    backupData[table.name] = tableData;
+                }
+            }
+
+            // Save the entire data object to a document named with the user's UID
+            await firestore.collection('backups').doc(user.uid).set(backupData);
+            showToast('تم حفظ النسخة الاحتياطية بنجاح.');
+            // Refresh the view to show the new backup date
+            renderView('backup_restore');
+
+        } catch (error) {
+            console.error("Cloud backup failed:", error);
+            showCustomToast('فشل حفظ النسخة الاحتياطية.', 'error');
+        }
+    });
   }
 
-  // *** إضافة: منطق الاستعادة ***
-  function handleRestoreData(event) {
-    const file = event.target.files[0];
-    if (!file) return;
+  // *** تعديل: منطق الاستعادة من السحابة ***
+  async function handleCloudRestore() {
+    const user = auth.currentUser;
+    if (!user) return;
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        try {
-            const backupData = JSON.parse(e.target.result);
-            openConfirmModal('هل أنت متأكد من استعادة البيانات؟ سيتم دمج البيانات من الملف مع البيانات الحالية وتحديثها.', async () => {
-                closeConfirmModal();
-                showToast('جاري استعادة البيانات...');
-                await db.transaction('rw', db.tables, async () => { for (const table of db.tables) { if (backupData[table.name] && backupData[table.name].length > 0) { await table.bulkPut(backupData[table.name]); } } });
-                showToast('تم استعادة البيانات بنجاح.');
-                setTimeout(() => location.reload(), 2500);
+    openConfirmModal('هل أنت متأكد من استعادة البيانات؟ سيتم دمج البيانات من السحابة مع بياناتك الحالية.', async () => {
+        closeConfirmModal();
+        showToast('جاري استعادة البيانات...');
+    try {
+            const backupDoc = await firestore.collection('backups').doc(user.uid).get();
+            if (!backupDoc.exists) {
+                showCustomToast('لا توجد نسخة احتياطية لك في السحابة.', 'error');
+                return;
+            }
+
+            const backupData = backupDoc.data();
+
+            // Use a transaction to write all data
+            await db.transaction('rw', db.tables, async () => {
+                for (const table of db.tables) {
+                    // Check if the backup contains data for this table and it's an array
+                    if (backupData[table.name] && Array.isArray(backupData[table.name])) {
+                        // bulkPut is perfect for "merge and update"
+                        await table.bulkPut(backupData[table.name]);
+                    }
+                }
             });
+
+            showToast('تم استعادة البيانات بنجاح!');
+            // Reload the app to apply all changes from the restored data
+            setTimeout(() => location.reload(), 1500);
+
         } catch (error) {
-            console.error("Restore failed:", error);
-            showCustomToast('فشل استعادة البيانات. الملف غير صالح.', 'error');
+            console.error("Cloud restore failed:", error);
+            showCustomToast('فشل استعادة البيانات.', 'error');
         }
-    };
-    reader.readAsText(file);
-    event.target.value = ''; // Reset input to allow re-selection of the same file
+    });
   }
 
   function getAiAssistantView() {
@@ -5015,6 +5104,17 @@
     }
   });
 
+  logoutBtn.addEventListener('click', async () => {
+    try {
+        await auth.signOut();
+        // The onAuthStateChanged observer will handle the redirect
+        showToast('تم تسجيل الخروج بنجاح.');
+    } catch (error) {
+        console.error("Logout Error:", error);
+        showCustomToast('حدث خطأ أثناء تسجيل الخروج.', 'error');
+    }
+  });
+
 
   // Worker Modal Listeners
   workerForm.addEventListener('submit', handleWorkerFormSubmit);
@@ -6128,7 +6228,24 @@
     }
   }
 
-  initializeApp();
+  // --- Auth State Observer ---
+  auth.onAuthStateChanged(user => {
+      if (user) {
+          // User is signed in. Initialize the app.
+          console.log("User is signed in:", user.email);
+          initializeApp();
+      } else {
+          // User is signed out. Redirect to login page.
+          console.log("User is signed out. Redirecting to login page.");
+          // Using replace() is better as it removes the current page from session history,
+          // so the user can't click the "back" button to get back to the protected app.
+          window.location.replace('login.html');
+      }
+  });
+
 </script>
+</body>
+</html>
+ript>
 </body>
 </html>
