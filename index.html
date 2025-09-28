@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -1316,6 +1318,7 @@
             case 'api_settings':  content = getApiSettingsView(); break;
             case 'factory_reset': content = getFactoryResetView(); break;
             case 'themes':        content = getThemesView(); break;
+            case 'backup_restore': content = getBackupRestoreView(); break; // *** إضافة: واجهة النسخ الاحتياطي ***
             case 'about':         content = getAboutView(); break;
             case 'supplier-details': content = getSupplierDetailsView(params.id); break;
             case 'debt-details':  content = getDebtDetailsView(params.id); break; // *** إضافة: واجهة تفاصيل الدين ***
@@ -1329,6 +1332,7 @@
             document.getElementById('navigateToApiSettings')?.addEventListener('click', () => renderView('api_settings'));
             document.getElementById('navigateToThemes')?.addEventListener('click', () => renderView('themes'));
             document.getElementById('navigateToFactoryReset')?.addEventListener('click', () => renderView('factory_reset'));
+            document.getElementById('navigateToBackupRestore')?.addEventListener('click', () => renderView('backup_restore'));
         }
         if (viewName === 'api_settings') {
             document.getElementById('addApiConfigBtn')?.addEventListener('click', () => openApiConfigModal());
@@ -1410,6 +1414,11 @@
         if (viewName === 'themes') {
             mainContent.querySelectorAll('.theme-card').forEach(card => card.addEventListener('click', async (e) => {
                 await applyThemeSet(e.currentTarget.dataset.theme);
+                renderView('themes'); // Re-render to show the active state
+            }));
+        }
+        if (viewName === 'backup_restore') {
+            mainContent.querySelectorAll('.theme-card').forEach(card => card.addEventListener('click', async (e) => {
                 renderView('themes'); // Re-render to show the active state
             }));
         }
@@ -2718,6 +2727,19 @@
             <i class="fas fa-chevron-left" style="color: var(--muted); align-self: center;"></i>
         </div>
 
+        <!-- *** إضافة: بطاقة النسخ الاحتياطي والاستعادة *** -->
+        <div id="navigateToBackupRestore" class="card" style="align-items:flex-start; text-align:right; flex-direction: row; justify-content: space-between; margin-top: 12px;">
+            <div style="display:flex; align-items:center; gap: 12px;">
+                <div class="icon" style="width:48px; height:48px; background: linear-gradient(135deg,#3b82f6,#2563eb); font-size: 20px; margin-bottom: 0;"><i class="fas fa-database"></i></div>
+                <div>
+                    <div style="font-weight:700;">النسخ الاحتياطي والاستعادة</div>
+                    <div style="font-size:13px; color: var(--muted)">حفظ نسخة من بياناتك أو استعادتها</div>
+                </div>
+            </div>
+            <i class="fas fa-chevron-left" style="color: var(--muted); align-self: center;"></i>
+        </div>
+
+
         <div id="navigateToFactoryReset" class="card" style="align-items:flex-start; text-align:right; flex-direction: row; justify-content: space-between; margin-top: 12px; border-top: 2px solid #ef4444;">
             <div style="display:flex; align-items:center; gap: 12px;">
                 <div class="icon" style="width:48px; height:48px; background: linear-gradient(135deg,#ef4444,#b91c1c); font-size: 20px; margin-bottom: 0;"><i class="fas fa-power-off"></i></div>
@@ -2968,6 +2990,83 @@
             ${darkThemesHTML}
         </div>
     `;
+  }
+
+  // *** إضافة: واجهة النسخ الاحتياطي والاستعادة ***
+  function getBackupRestoreView() {
+    return `
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px; gap: 12px;">
+            <button onclick="renderView('settings')" class="btn icon-btn" title="العودة للإعدادات"><i class="fas fa-arrow-right"></i></button>
+            <h3 style="margin:0; font-weight:800; text-align: right; flex-grow: 1;">النسخ الاحتياطي والاستعادة</h3>
+        </div>
+
+        <div class="card" style="cursor:default; transform:none; padding: 20px; align-items: stretch; text-align: right; margin-bottom: 20px;">
+            <h4 style="margin: 0 0 8px; font-size: 16px;">تصدير البيانات</h4>
+            <p style="color: var(--muted); line-height: 1.6; margin: 0 0 16px;">
+                قم بإنشاء نسخة احتياطية من جميع بياناتك (المشاريع، العمال، النفقات، إلخ) في ملف واحد. احتفظ بهذا الملف في مكان آمن.
+            </p>
+            <button onclick="handleBackupData()" class="btn" style="background-color: #10b981; width: 100%;"><i class="fas fa-download" style="margin-left: 8px;"></i> تصدير البيانات الآن</button>
+        </div>
+
+        <div class="card" style="cursor:default; transform:none; padding: 20px; align-items: stretch; text-align: right; border-top: 2px solid #f59e0b;">
+            <h4 style="margin: 0 0 8px; font-size: 16px;">استيراد البيانات</h4>
+            <p style="color: var(--muted); line-height: 1.6; margin: 0 0 16px;">
+                سيتم دمج البيانات من الملف مع بياناتك الحالية. السجلات الجديدة ستُضاف والسجلات القديمة ستُحدّث.
+            </p>
+            <button onclick="document.getElementById('restoreFileInput').click()" class="btn" style="background-color: #f59e0b; width: 100%;"><i class="fas fa-upload" style="margin-left: 8px;"></i> استيراد البيانات من ملف</button>
+            <input type="file" id="restoreFileInput" accept=".json" style="display: none;" onchange="handleRestoreData(event)">
+        </div>
+    `;
+  }
+
+  // *** إضافة: منطق النسخ الاحتياطي ***
+  async function handleBackupData() {
+    try {
+        showToast('جاري تجهيز النسخة الاحتياطية...');
+        const backupData = {};
+        for (const table of db.tables) {
+            backupData[table.name] = await table.toArray();
+        }
+
+        const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `decor-manager-backup-${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showToast('تم تحميل النسخة الاحتياطية بنجاح.');
+    } catch (error) {
+        console.error("Backup failed:", error);
+        showCustomToast('فشل إنشاء النسخة الاحتياطية.', 'error');
+    }
+  }
+
+  // *** إضافة: منطق الاستعادة ***
+  function handleRestoreData(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        try {
+            const backupData = JSON.parse(e.target.result);
+            openConfirmModal('هل أنت متأكد من استعادة البيانات؟ سيتم دمج البيانات من الملف مع البيانات الحالية وتحديثها.', async () => {
+                closeConfirmModal();
+                showToast('جاري استعادة البيانات...');
+                await db.transaction('rw', db.tables, async () => { for (const table of db.tables) { if (backupData[table.name] && backupData[table.name].length > 0) { await table.bulkPut(backupData[table.name]); } } });
+                showToast('تم استعادة البيانات بنجاح.');
+                setTimeout(() => location.reload(), 2500);
+            });
+        } catch (error) {
+            console.error("Restore failed:", error);
+            showCustomToast('فشل استعادة البيانات. الملف غير صالح.', 'error');
+        }
+    };
+    reader.readAsText(file);
+    event.target.value = ''; // Reset input to allow re-selection of the same file
   }
 
   function getAiAssistantView() {
@@ -5378,7 +5477,7 @@
   document.getElementById('expenseImageRemoveBtn')?.addEventListener('click', () => resetExpenseImagePreview());
 
   function closeProfileModal() {
-      document.getElementById('profileModal').style.display = 'none';
+      closeModal('profileModal');
   }
 
   function resetProfileLogoPreview() {
