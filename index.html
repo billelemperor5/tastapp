@@ -99,11 +99,11 @@
     cursor:pointer; border: 2px solid transparent;
   }
   .card .icon{
-    width:60px; height:60px; border-radius:16px; display:flex; align-items:center;
-    justify-content:center; color:white; font-size:24px; margin-bottom: 4px;
+    width:50px; height:50px; border-radius:14px; display:flex; align-items:center;
+    justify-content:center; color:white; font-size:20px; margin-bottom: 4px;
   }
 
-  .btn{background:var(--primary);color:white;padding:8px 12px;border-radius:10px;font-weight:700; border:none; cursor:pointer;}
+  .btn{background:var(--primary);color:white;padding:6px 10px;border-radius:8px;font-weight:700; border:none; cursor:pointer; font-size: 14px;}
   .btn.ghost{background:transparent;border:1px solid rgba(0,0,0,.06);color:var(--primary)}
 
   /* --- Navigation Styles (Mobile First) --- */
@@ -193,6 +193,14 @@
     }
     header.app-header {
         display: none;
+    }
+    /* --- إعادة حجم الأزرار للشاشات الأكبر --- */
+    .btn {
+      padding: 8px 12px;
+      font-size: initial; /* Or 15px, or whatever the original base size was */
+    }
+    .card .icon {
+      width: 60px; height: 60px; border-radius: 16px; font-size: 24px;
     }
   }
 
@@ -1919,12 +1927,12 @@
         <!-- *** تحسين: إعادة تصميم بطاقات الملخص المالي لعرض 5 قيم *** -->
         <div class="grid-cards" style="grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); margin-top:16px; margin-bottom: 20px;">
             <div class="card" style="cursor:default; transform:none; text-align:right; align-items:flex-start; padding:12px;">
-                <div style="font-size:13px; color:var(--muted);">الميزانية التقديرية</div>
-                <div style="font-weight:800; font-size:18px; color:var(--primary);">${budget.toLocaleString()} د.ج</div>
+                <div style="font-size:12px; color:var(--muted);">الميزانية التقديرية</div>
+                <div style="font-weight:800; font-size:16px; color:var(--primary);">${budget.toLocaleString()} د.ج</div>
             </div>
             <div class="card" style="cursor:default; transform:none; text-align:right; align-items:flex-start; padding:12px;">
                 <div style="font-size:13px; color:var(--muted);">المبلغ المستلم</div>
-                <div style="font-weight:800; font-size:18px; color:#10b981;">${totalReceived.toLocaleString()} د.ج</div>
+                <div style="font-weight:800; font-size:16px; color:#10b981;">${totalReceived.toLocaleString()} د.ج</div>
             </div>
             <div class="card" style="cursor:default; transform:none; text-align:right; align-items:flex-start; padding:12px;">
                 <div style="font-size:13px; color:var(--muted);">إجمالي النفقات</div>
@@ -1932,12 +1940,12 @@
             </div>
             <div class="card" style="cursor:default; transform:none; text-align:right; align-items:flex-start; padding:12px;">
                 <div style="font-size:13px; color:var(--muted);">المتبقي على العميل</div>
-                <div style="font-weight:800; font-size:18px; color:${remainingFromClient >= 0 ? 'var(--muted)' : '#ef4444'};">${remainingFromClient.toLocaleString()} د.ج</div>
+                <div style="font-weight:800; font-size:16px; color:${remainingFromClient >= 0 ? 'var(--muted)' : '#ef4444'};">${remainingFromClient.toLocaleString()} د.ج</div>
             </div>
             <!-- *** إضافة: بطاقة جديدة لعرض الرصيد الصافي (الربح/الخسارة) *** -->
             <div class="card" style="cursor:default; transform:none; text-align:right; align-items:flex-start; padding:12px; background: linear-gradient(135deg, rgba(168, 85, 247, 0.1), rgba(147, 51, 234, 0.1)); border-color: #a855f7;">
                 <div style="font-size:13px; color:var(--muted);">الرصيد الصافي</div>
-                <div style="font-weight:800; font-size:18px; color:${netBalance >= 0 ? '#a855f7' : '#ef4444'};">${netBalance.toLocaleString()} د.ج</div>
+                <div style="font-weight:800; font-size:16px; color:${netBalance >= 0 ? '#a855f7' : '#ef4444'};">${netBalance.toLocaleString()} د.ج</div>
             </div>
         </div>
         <!-- *** إضافة: عرض معلومات صاحب المنزل وصاحب البناء *** -->
@@ -2048,7 +2056,7 @@
             <div style="display: flex; align-items: center;">
                 <h3 style="margin:0 0 4px; font-weight:800">${project.name}</h3>
             </div>
-            <div>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end;">
                 <!-- *** إضافة: زر جديد لتحليل المشروع بالذكاء الاصطناعي *** -->
                 <button id="analyzeProjectBtn" data-id="${project.id}" class="btn ghost" style="margin-left: 8px; color: #0ea5e9; border-color: #0ea5e9;"><i class="fas fa-robot"></i> تحليل</button>
                 <button id="editProjectBtn" data-id="${project.id}" class="btn ghost" style="margin-left: 8px; color: var(--primary); border-color: var(--primary);"><i class="fas fa-edit" style="margin-left:6px;"></i> تعديل</button>
