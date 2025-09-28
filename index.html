@@ -264,6 +264,11 @@
   #confirmModal {
     z-index: 110;
   }
+  /* *** إضافة: صنف لإخفاء النوافذ المنبثقة *** */
+  .modal-container.modal-hidden {
+    display: none;
+  }
+
 
   /* --- Worker Details & Calendar Styles --- */
   .calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; }
@@ -522,6 +527,185 @@
   @media (max-width: 480px) {
     .professional-table .hide-on-mobile { display: none; }
   }
+
+/* =================================================================
+   * بداية الكود المصحح للهواتف *
+   ================================================================= */
+
+/* --- تعديلات عامة للهواتف الصغيرة --- */
+@media (max-width: 480px) {
+
+  /* 1. تصغير حجم البطاقات الرئيسية */
+  .card {
+    padding: 12px; /* تقليل الحشو الداخلي للبطاقة */
+    gap: 6px;      /* تقليل المسافة بين الأيقونة والنص */
+  }
+
+  .card .icon {
+    width: 48px;   /* تصغير عرض الأيقونة */
+    height: 48px;  /* تصغير ارتفاع الأيقونة */
+    font-size: 20px; /* تصغير حجم الرمز داخل الأيقونة */
+    border-radius: 12px; /* تدوير حواف الأيقونة بشكل متناسق */
+  }
+
+  /* 2. تعديل أحجام الخطوط */
+  
+  /* عنوان البطاقة الرئيسي (مثل: إدارة المشاريع) */
+  .card div[style*="font-weight:900"] {
+    font-size: 15px !important; /* تصغير حجم الخط */
+  }
+
+  /* الوصف الفرعي للبطاقة */
+  .card div[style*="font-size:13px"] {
+    font-size: 12px !important; /* تصغير حجم الخط */
+    line-height: 1.4; /* تحسين قراءة النص */
+  }
+
+  /* عناوين الواجهات (مثل: إدارة المشاريع، سجل العمال) */
+  h3[style*="font-weight:800"] {
+    font-size: 18px !important;
+  }
+
+  /* عناوين داخل النوافذ المنبثقة */
+  .modal-header h3 {
+    font-size: 17px;
+  }
+
+  /* 3. تصغير حجم الأزرار */
+  .btn {
+    padding: 9px 14px;   /* تعديل الحشو ليصبح الزر أصغر */
+    font-size: 13px;     /* تصغير خط الزر */
+    border-radius: 8px;  /* تدوير حواف الزر بشكل أنعم */
+  }
+
+  /* استهداف أزرار "العودة" و "التعديل" بشكل خاص */
+  div > .btn, button[onclick*="renderView"] {
+      padding: 8px 12px;
+      font-size: 12px;
+  }
+  
+  /* أزرار الإجراءات داخل النماذج (حفظ، حذف...) */
+  .form-actions .btn {
+    padding: 10px 16px; /* جعلها أكبر قليلاً لسهولة الضغط */
+  }
+
+  /* 4. تحسينات إضافية للتجاوب */
+
+  /* تقليل المسافات بين البطاقات في الشبكة */
+  .grid-cards {
+    gap: 10px;
+  }
+
+  /* تقليل الحشو في المحتوى الرئيسي لزيادة المساحة */
+  main {
+    padding: 12px;
+  }
+
+  /* تصغير حجم الجداول لتناسب الشاشة */
+  .professional-table th, .professional-table td {
+    padding: 10px 8px;
+    font-size: 13px;
+  }
+  
+  .professional-table .hide-on-mobile { 
+      display: none; /* إخفاء الأعمدة غير المهمة في الجداول */
+  }
+}
+/* =================================================================
+   * نهاية الكود المصحح *
+   ================================================================= */
+
+/* =================================================================
+   *  تعديلات إضافية لتصغير المحتوى على الهواتف *
+   ================================================================= */
+
+@media (max-width: 420px) { /* استهداف الشاشات الأصغر حجماً */
+
+  /* 1. تصغير البطاقات التي تعرض القوائم (المشاريع، العمال، ...) */
+  .card[style*="flex-direction: row"] {
+    padding: 10px !important; /* تقليل الحشو بشكل أكبر */
+    margin-bottom: 8px !important;
+    gap: 8px !important;
+  }
+
+  .card[style*="flex-direction: row"] .icon,
+  .card[style*="flex-direction: row"] img {
+    width: 40px !important;  /* تصغير الأيقونة/الصورة */
+    height: 40px !important;
+    font-size: 18px !important;
+  }
+
+  /* تصغير الخطوط داخل بطاقات القوائم */
+  .card[style*="flex-direction: row"] div[style*="font-weight: 700"] {
+    font-size: 14px !important; /* اسم المشروع/العامل */
+  }
+  .card[style*="flex-direction: row"] div[style*="font-size: 13px"] {
+    font-size: 11px !important; /* الوصف الفرعي */
+  }
+  .card[style*="flex-direction: row"] div[style*="font-size: 15px"] {
+    font-size: 13px !important; /* المبالغ المالية */
+  }
+
+  /* 2. تصغير بطاقات الملخص المالي (في تفاصيل العامل/المشروع) */
+  .grid-cards[style*="minmax(150px, 1fr)"] {
+      /* On very small screens, stack the summary cards */
+      grid-template-columns: 1fr !important;
+  }
+  
+  .grid-cards[style*="minmax(140px, 1fr)"] {
+      /* On very small screens, stack the summary cards */
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)) !important;
+  }
+
+  .grid-cards[style*="minmax(150px, 1fr)"] .card,
+  .grid-cards[style*="minmax(140px, 1fr)"] .card {
+      padding: 10px !important;
+  }
+
+  .grid-cards[style*="minmax(150px, 1fr)"] .card div[style*="font-size:18px"],
+  .grid-cards[style*="minmax(140px, 1fr)"] .card div[style*="font-size:18px"] {
+      font-size: 16px !important;
+  }
+
+
+  /* 3. تصغير الأزرار بشكل إضافي */
+  .btn {
+    padding: 8px 12px !important;
+    font-size: 12px !important;
+  }
+  
+  /* الأزرار الكبيرة في النماذج */
+  .form-actions .btn {
+    padding: 10px 14px !important;
+  }
+  
+  /* أزرار الإجراءات في صفحة تفاصيل العامل */
+  div[style*="margin-bottom: 16px; display:flex; gap:10px;"] .btn {
+      padding: 9px 10px !important;
+      font-size: 11px !important;
+  }
+
+  /* 4. تصغير الخطوط بشكل عام */
+  h2, .hero h2 {
+      font-size: 18px !important;
+  }
+  p, .hero p {
+      font-size: 13px !important;
+  }
+  
+  /* تصغير خطوط الترويسة العلوية */
+  header.app-header .brand div[style*="font-weight:800"] {
+      font-size: 15px !important;
+  }
+   header.app-header .brand div[style*="font-size:13px"] {
+      font-size: 11px !important;
+   }
+  header.app-header .logo {
+      width: 40px !important;
+      height: 40px !important;
+  }
+
+}
 </style>
 </head>
 <body>
@@ -593,7 +777,7 @@
   </div>
 
   <!-- *** إضافة: نافذة منبثقة لعرض كل دفعات العميل لمشروع معين *** -->
-  <div id="allPaymentsModal" class="modal-container" style="display: none;">
+  <div id="allPaymentsModal" class="modal-container modal-hidden">
       <div class="modal-backdrop"></div>
       <div class="modal-content" style="max-width: 500px;">
           <div class="modal-header">
@@ -611,7 +795,7 @@
 
 
   <!-- *** إضافة: نافذة منبثقة لعرض كل الأنشطة المالية للمشروع *** -->
-  <div id="projectFullFinanceModal" class="modal-container" style="display: none;">
+  <div id="projectFullFinanceModal" class="modal-container modal-hidden">
       <div class="modal-backdrop"></div>
       <div class="modal-content" style="max-width: 500px;">
           <div class="modal-header">
@@ -627,7 +811,7 @@
   </div>
 
   <!-- *** إضافة: نافذة منبثقة لعرض كل نفقات المشروع *** -->
-  <div id="allExpensesModal" class="modal-container" style="display: none;">
+  <div id="allExpensesModal" class="modal-container modal-hidden">
       <div class="modal-backdrop"></div>
       <div class="modal-content" style="max-width: 500px;">
           <div class="modal-header">
@@ -648,7 +832,7 @@
 
 
   <!-- Modal for adding/editing workers -->
-  <div id="workerModal" class="modal-container" style="display: none;">
+  <div id="workerModal" class="modal-container modal-hidden">
       <div class="modal-backdrop"></div>
       <div class="modal-content">
           <div class="modal-header">
@@ -693,7 +877,7 @@
   </div>
 
   <!-- Modal for adding attendance/payment -->
-  <div id="activityModal" class="modal-container" style="display: none;">
+  <div id="activityModal" class="modal-container modal-hidden">
       <div class="modal-backdrop"></div>
       <div class="modal-content">
           <div class="modal-header">
@@ -727,7 +911,7 @@
   </div>
 
   <!-- Modal for full activity log -->
-  <div id="activityLogModal" class="modal-container" style="display: none;">
+  <div id="activityLogModal" class="modal-container modal-hidden">
       <div class="modal-backdrop"></div>
       <div class="modal-content" style="max-width: 500px;">
           <div class="modal-header">
@@ -743,7 +927,7 @@
   </div>
 
   <!-- Modal for adding/editing suppliers -->
-  <div id="supplierModal" class="modal-container" style="display: none;">
+  <div id="supplierModal" class="modal-container modal-hidden">
       <div class="modal-backdrop"></div>
       <div class="modal-content">
           <div class="modal-header">
@@ -792,7 +976,7 @@
   </div>
 
   <!-- Modal for attendance confirmation -->
-  <div id="attendanceConfirmModal" class="modal-container" style="display: none;">
+  <div id="attendanceConfirmModal" class="modal-container modal-hidden">
       <div class="modal-backdrop"></div>
       <div class="modal-content" style="max-width: 360px;">
           <div class="modal-header">
@@ -810,7 +994,7 @@
   </div>
 
   <!-- Modal for generic confirmation -->
-  <div id="confirmModal" class="modal-container" style="display: none;">
+  <div id="confirmModal" class="modal-container modal-hidden">
       <div class="modal-backdrop"></div>
       <div class="modal-content" style="max-width: 380px;">
           <div class="modal-header">
@@ -829,7 +1013,7 @@
   </div>
 
   <!-- Modal for adding/editing notes -->
-  <div id="noteModal" class="modal-container" style="display: none;">
+  <div id="noteModal" class="modal-container modal-hidden">
       <div class="modal-backdrop"></div>
       <div class="modal-content" style="max-width: 500px;">
           <div class="modal-header">
@@ -874,7 +1058,7 @@
   </div>
 
   <!-- Modal for adding/editing inventory items -->
-  <div id="inventoryModal" class="modal-container" style="display: none;">
+  <div id="inventoryModal" class="modal-container modal-hidden">
       <div class="modal-backdrop"></div>
       <div class="modal-content">
           <div class="modal-header">
@@ -918,7 +1102,7 @@
   </div>
 
   <!-- Modal for lending an item -->
-  <div id="lendItemModal" class="modal-container" style="display: none;">
+  <div id="lendItemModal" class="modal-container modal-hidden">
       <div class="modal-backdrop"></div>
       <div class="modal-content">
           <div class="modal-header">
@@ -945,7 +1129,7 @@
   </div>
 
   <!-- Modal for adding/editing calendar events -->
-  <div id="eventModal" class="modal-container" style="display: none;">
+  <div id="eventModal" class="modal-container modal-hidden">
       <div class="modal-backdrop"></div>
       <div class="modal-content">
           <div class="modal-header">
@@ -981,7 +1165,7 @@
   </div>
 
   <!-- Modal for event details -->
-  <div id="eventDetailsModal" class="modal-container" style="display: none;">
+  <div id="eventDetailsModal" class="modal-container modal-hidden">
       <div class="modal-backdrop"></div>
       <div class="modal-content" style="max-width: 420px;">
           <div class="modal-header">
@@ -1006,75 +1190,30 @@
       </div>
   </div>
 
-  <!-- *** إضافة: نافذة منبثقة لإضافة/تعديل المهام *** -->
-  <div id="taskModal" class="modal-container" style="display: none;">
+  <!-- *** إضافة: نافذة منبثقة لإضافة/تعديل الديون *** -->
+  <div id="debtModal" class="modal-container modal-hidden">
       <div class="modal-backdrop"></div>
-      <div class="modal-content" style="max-width: 450px;">
+      <div class="modal-content">
           <div class="modal-header">
-              <h3 id="taskModalTitle">إضافة مهمة جديدة</h3>
+              <h3 id="debtModalTitle">إضافة دين جديد</h3>
               <button class="close-btn" data-action="close-modal">&times;</button>
           </div>
           <div class="modal-body">
-              <form id="taskForm">
-                  <input type="hidden" id="taskId">
-                  <input type="hidden" id="taskProjectId">
+              <form id="debtForm">
+                  <input type="hidden" id="debtId">
                   <div class="form-group">
-                      <label for="taskTitle">عنوان المهمة</label>
-                      <input type="text" id="taskTitle" required placeholder="مثال: تركيب الجبس لغرفة الجلوس">
-                  </div>
-                  <div class="form-group">
-                      <label for="taskStatus">حالة المهمة</label>
-                      <select id="taskStatus" class="form-group input" style="padding: 10px; width: 100%;">
-                          <option value="todo">جديدة</option>
-                          <option value="inprogress">قيد التنفيذ</option>
-                          <option value="done">مكتملة</option>
-                      </select>
+                      <label for="debtPerson">اسم الشخص</label>
+                      <input type="text" id="debtPerson" required placeholder="مثال: أحمد علي">
                   </div>
                   <div class="form-group">
-                      <label for="taskAssignedTo">إسناد إلى (يمكن اختيار أكثر من عامل)</label>
-                      <select id="taskAssignedTo" multiple class="form-group input" style="padding: 10px; width: 100%; height: 120px;"></select>
-                  </div>
-                  <div class="form-actions">
-                      <button type="submit" class="btn">حفظ المهمة</button>
-                      <button type="button" class="btn" id="deleteTaskBtn" style="display: none; background-color: #ef4444;">حذف</button>
-                  </div>
-              </form>
-          </div>
-      </div>
-  </div>
-
-  <!-- *** إضافة: نافذة منبثقة لإضافة/تعديل المهام *** -->
-  <div id="taskModal" class="modal-container" style="display: none;">
-      <div class="modal-backdrop"></div>
-      <div class="modal-content" style="max-width: 450px;">
-          <div class="modal-header">
-              <h3 id="taskModalTitle">إضافة مهمة جديدة</h3>
-              <button class="close-btn" data-action="close-modal">&times;</button>
-          </div>
-          <div class="modal-body">
-              <form id="taskForm">
-                  <input type="hidden" id="taskId">
-                  <input type="hidden" id="taskProjectId">
-                  <div class="form-group">
-                      <label for="taskTitle">عنوان المهمة</label>
-                      <input type="text" id="taskTitle" required placeholder="مثال: تركيب الجبس لغرفة الجلوس">
+                      <label for="debtAmount">المبلغ (د.ج)</label>
+                      <input type="number" id="debtAmount" required>
                   </div>
                   <div class="form-group">
-                      <label for="taskStatus">حالة المهمة</label>
-                      <select id="taskStatus" class="form-group input" style="padding: 10px; width: 100%;">
-                          <option value="todo">جديدة</option>
-                          <option value="inprogress">قيد التنفيذ</option>
-                          <option value="done">مكتملة</option>
-                      </select>
+                      <label for="debtDueDate">تاريخ الاستحقاق (اختياري)</label>
+                      <input type="date" id="debtDueDate">
                   </div>
-                  <div class="form-group">
-                      <label for="taskAssignedTo">إسناد إلى (يمكن اختيار أكثر من عامل)</label>
-                      <select id="taskAssignedTo" multiple class="form-group input" style="padding: 10px; width: 100%; height: 120px;"></select>
-                  </div>
-                  <div class="form-actions">
-                      <button type="submit" class="btn">حفظ المهمة</button>
-                      <button type="button" class="btn" id="deleteTaskBtn" style="display: none; background-color: #ef4444;">حذف</button>
-                  </div>
+                  <div class="form-group"><label for="debtNotes">ملاحظات</label><textarea id="debtNotes" rows="3" placeholder="تفاصيل إضافية عن الدين..."></textarea></div><div class="form-actions"><button type="submit" class="btn">حفظ</button><button type="button" class="btn" id="deleteDebtBtn" style="display: none; background-color: #ef4444;">حذف</button></div>
               </form>
           </div>
       </div>
@@ -1094,13 +1233,13 @@
   
   // --- Database Setup (Dexie.js) ---
   const db = new Dexie('decorManagerDB');
-  // *** إضافة: جدول جديد للمهام ورفع إصدار قاعدة البيانات ***
-  db.version(19).stores({
+  // *** إضافة: جدول جديد للديون ورفع إصدار قاعدة البيانات ***
+  db.version(21).stores({
       workers: '++id, name, settlements',
-      projects: '++id, name, clientId, status', // التعريف الصحيح الذي يشمل الحالة
-      clients: '++id, name',
+      projects: '++id, name, status, builderName',
       suppliers: '++id, name',
       inventory: '++id, name, borrowerName',
+      debts: '++id, type, dueDate', // جدول الديون الجديد
       calendarEvents: '++id, startDate, endDate',
       expenses: '++id, date, projectId, workerId, supplierId, category, paymentStatus',
       projectPayments: '++id, projectId, date',
@@ -1108,9 +1247,7 @@
       companyProfiles: '++id, profileName', 
       notes: '++id, updatedAt',
       app_settings: 'key' // A simple key-value store for things like theme
-  }).upgrade(tx => {
-    // *** إصلاح: تم حذف هذا السطر لأنه يحاول الوصول إلى جدول 'todos' الذي لم يعد موجوداً في هذا الإصدار من قاعدة البيانات ***
-    // return tx.table('todos').clear(); 
+  }).upgrade(tx => { 
   });
 
   // *** إضافة: متغير لتتبع حالة فتح قاعدة البيانات ***
@@ -1125,9 +1262,9 @@
     suppliers: [],
     notes: [], // *** إصلاح: إضافة حالة لتخزين المهام ***
     inventory: [],
+    debts: [], // *** إضافة: حالة لتخزين الديون ***
     projectPayments: [],
     calendarEvents: [],
-    clients: [],
     companyProfiles: [],
     api_configs: []
   };
@@ -1166,11 +1303,11 @@
       color: 'linear-gradient(135deg,#ef4444,#dc2626)' 
     },
     {
-      key: 'clients',
-      title: 'إدارة العملاء',
-      description: 'سجل العملاء وبيانات الاتصال',
-      icon: 'fa-address-book',
-      color: 'linear-gradient(135deg,#2563eb,#3b82f6)',
+      key: 'inventory',
+      title: 'مخزون الأدوات',
+      description: 'تتبع أدوات ومعدات العمل',
+      icon: 'fa-toolbox',
+      color: 'linear-gradient(135deg,#22c55e,#16a34a)',
     },
     {
       key: 'more_features',
@@ -1196,8 +1333,8 @@
       icon: 'fa-robot', 
       color: 'linear-gradient(135deg,#0ea5e9,#0284c7)' 
     },
-    { key: 'calendar', title: 'الجدول الزمني', description: 'تنظيم مواعيد المشاريع والمهام', icon: 'fa-calendar-alt', color: 'linear-gradient(135deg,#ec4899,#d946ef)' },
-    { key: 'inventory', title: 'مخزون الأدوات', description: 'تتبع أدوات ومعدات العمل', icon: 'fa-toolbox', color: 'linear-gradient(135deg,#22c55e,#16a34a)' },
+    { key: 'calendar', title: 'الجدول الزمني', description: 'تنظيم مواعيد المشاريع والمهام', icon: 'fa-calendar-alt', color: 'linear-gradient(135deg,#ec4899,#d946ef)' },    
+    { key: 'debts_feature', title: 'سجل الديون', description: 'تتبع ديونك وديون الآخرين', icon: 'fa-book-reader', color: 'linear-gradient(135deg,#8b5cf6,#7c3aed)' },
     { key: 'notes', title: 'ملاحظات سريعة', description: 'لتسجيل الأفكار والمقاسات', icon: 'fa-sticky-note', color: 'linear-gradient(135deg,#3b82f6,#2563eb)' }
   ];
 
@@ -1244,9 +1381,9 @@
       state.notes = await db.notes.toArray();
       state.projectPayments = await db.projectPayments.toArray();
       state.inventory = await db.inventory.toArray();
+      state.debts = await db.debts.toArray();
       state.calendarEvents = await db.calendarEvents.toArray();
       state.expenses = await db.expenses.toArray();
-      state.clients = await db.clients.toArray();
       state.companyProfiles = await db.companyProfiles.toArray();
       state.api_configs = await db.api_configs.toArray();
       
@@ -1310,10 +1447,10 @@
         state.notes = await db.notes.toArray();
         state.projectPayments = await db.projectPayments.toArray();
         state.inventory = await db.inventory.toArray();
+        state.debts = await db.debts.toArray();
         state.calendarEvents = await db.calendarEvents.toArray();
         state.expenses = await db.expenses.toArray();
         state.companyProfiles = await db.companyProfiles.toArray();
-        state.clients = await db.clients.toArray();
         state.api_configs = await db.api_configs.toArray();
     } catch (error) {
         console.error("Error fetching data in renderView:", error);
@@ -1332,11 +1469,11 @@
             case 'project-details': content = getProjectDetailsView(params.id); break;
             case 'suppliers':     content = getSuppliersView(); break;
             case 'settings':      content = getSettingsView(); break;
-            case 'clients':       content = getClientsView(); break;
             case 'reports':       content = getReportsView(); break;
             case 'more_features': content = getMoreFeaturesView(); break; 
             case 'calendar':      content = getCalendarView(); break;
             case 'expenses':      content = getExpensesView(); break;
+            case 'debts_feature': content = getDebtsView(); break;
             case 'inventory':     content = getInventoryView(); break;
             case 'ai_assistant':  content = getAiAssistantView(); break;
             case 'notes':         content = getNotesView(); break;
@@ -1349,7 +1486,7 @@
             case 'themes':        content = getThemesView(); break;
             case 'about':         content = getAboutView(); break;
             case 'supplier-details': content = getSupplierDetailsView(params.id); break;
-            case 'client-details': content = getClientDetailsView(params.id); break;
+            case 'debt-details':  content = getDebtDetailsView(params.id); break; // *** إضافة: واجهة تفاصيل الدين ***
             case 'inventory-details': content = getInventoryItemDetailsView(params.id); break;
             default:              content = `<h3>View Not Found: ${viewName}</h3>`;
         } 
@@ -1372,41 +1509,6 @@
         if (viewName === 'projects') {
             document.getElementById('addProjectBtn')?.addEventListener('click', () => openProjectModal());
             mainContent.querySelectorAll('[data-action="view-project"]').forEach(card => card.addEventListener('click', (e) => renderView('project-details', { id: parseInt(e.currentTarget.dataset.id) })));
-        }
-        if (viewName === 'project-details') {
-            document.getElementById('backToProjects')?.addEventListener('click', () => renderView('projects'));
-            document.getElementById('editProjectBtn')?.addEventListener('click', (e) => openProjectModal(parseInt(e.currentTarget.dataset.id)));
-            // *** إضافة: ربط زر تحليل المشروع بالذكاء الاصطناعي ***
-            document.getElementById('analyzeProjectBtn')?.addEventListener('click', (e) => handleAnalysisRequest('project', parseInt(e.currentTarget.dataset.id)));
-            // Use event delegation for buttons inside tabs
-            mainContent.addEventListener('click', e => {
-                const addExpenseBtn = e.target.closest('#addExpenseForProjectBtn');
-                const addPaymentBtn = e.target.closest('#addProjectPaymentBtn');
-                const tabButton = e.target.closest('.tab-card'); // *** تحسين: التبديل باستخدام البطاقات الجديدة ***
-                if (addExpenseBtn) openExpenseModal(null, { projectId: parseInt(addExpenseBtn.dataset.id) });
-                // *** إضافة: ربط زر "عرض الكل" بالنافذة المنبثقة ***
-                const showAllFinanceBtn = e.target.closest('#showAllFinanceBtn');
-                if (showAllFinanceBtn) {
-                    openProjectFullFinanceModal(parseInt(showAllFinanceBtn.dataset.id));
-                }
-
-                // *** إضافة: ربط زر "عرض كل الدفعات" بالنافذة المنبثقة الجديدة ***
-                // *** إصلاح: التأكد من وجود الزر قبل استدعاء الدالة وتصحيح الدالة المستدعاة ***
-                const showAllPaymentsBtn = e.target.closest('#showAllPaymentsBtn');
-                // *** إصلاح: التأكد من أن dataset موجود قبل استخدامه ***
-                if (showAllPaymentsBtn && showAllPaymentsBtn.dataset.id) {
-                    openAllPaymentsModal(parseInt(showAllPaymentsBtn.dataset.id));
-                }
-
-                // *** إضافة: ربط زر "عرض كل النفقات" بالنافذة المنبثقة الجديدة ***
-                const showAllExpensesBtn = e.target.closest('#showAllExpensesBtn');
-                if (showAllExpensesBtn && showAllExpensesBtn.dataset.id) {
-                    openAllExpensesModal(parseInt(showAllExpensesBtn.dataset.id));
-                }
-
-                if (addPaymentBtn) openProjectPaymentModal(null, parseInt(addPaymentBtn.dataset.id));
-                if (tabButton) switchProjectTab(tabButton.dataset.tab);
-            });
         }
         if (viewName === 'worker-details') {
             document.getElementById('editWorkerBtn')?.addEventListener('click', (e) => openWorkerModal(parseInt(e.currentTarget.dataset.id)));
@@ -1454,16 +1556,6 @@
                 openEventDetailsModal(parseInt(e.currentTarget.dataset.id));
             }));
         }
-        if (viewName === 'expenses') {
-            document.getElementById('addExpenseBtn')?.addEventListener('click', () => openExpenseModal());
-            mainContent.querySelectorAll('[data-action="view-expense"]').forEach(card => card.addEventListener('click', (e) => renderView('expense-details', { id: parseInt(e.currentTarget.dataset.id) })));
-        }
-        if (viewName === 'expense-details') {
-            document.getElementById('backToExpenses')?.addEventListener('click', () => renderView('expenses'));
-            document.getElementById('editExpenseBtn')?.addEventListener('click', (e) => openExpenseModal(parseInt(e.currentTarget.dataset.id)));
-            document.getElementById('analyzeExpenseBtn')?.addEventListener('click', (e) => handleAnalysisRequest('expense', parseInt(e.currentTarget.dataset.id)));
-            document.getElementById('printExpenseBtn')?.addEventListener('click', (e) => printExpenseReport(parseInt(e.currentTarget.dataset.id)));
-        }
         if (viewName === 'my_info') {
             document.getElementById('addProfileBtn')?.addEventListener('click', () => openProfileModal());
             mainContent.querySelectorAll('[data-action="view-profile"]').forEach(card => card.addEventListener('click', (e) => renderView('profile-details', { id: parseInt(e.currentTarget.dataset.id) })));
@@ -1483,15 +1575,21 @@
         if (viewName === 'factory_reset') {
             document.getElementById('factoryResetBtn')?.addEventListener('click', handleFactoryReset);
         }
-        if (viewName === 'client-details') {
-            document.getElementById('editClientBtn')?.addEventListener('click', (e) => openClientModal(parseInt(e.currentTarget.dataset.id)));
-            document.getElementById('backToClients')?.addEventListener('click', () => renderView('clients'));
-        }
         if (viewName === 'themes') {
             mainContent.querySelectorAll('.theme-card').forEach(card => card.addEventListener('click', async (e) => {
                 await applyThemeSet(e.currentTarget.dataset.theme);
                 renderView('themes'); // Re-render to show the active state
             }));
+        }
+        if (viewName === 'debts_feature') {
+            // Event handlers are now embedded in the HTML generated by getDebtsView
+        }
+        // *** إضافة: معالجات أحداث واجهة تفاصيل الدين ***
+        if (viewName === 'debt-details') {
+            document.getElementById('backToDebts')?.addEventListener('click', () => renderView('debts_feature'));
+            document.getElementById('editDebtBtn')?.addEventListener('click', (e) => openDebtModal(parseInt(e.currentTarget.dataset.id)));
+            document.getElementById('addDebtPaymentBtn')?.addEventListener('click', (e) => openDebtPaymentModal(parseInt(e.currentTarget.dataset.id)));
+            document.getElementById('analyzeDebtBtn')?.addEventListener('click', (e) => handleAnalysisRequest('debt', parseInt(e.currentTarget.dataset.id)));
         }
     };
 
@@ -1549,12 +1647,8 @@
   }
 
   function getHomeView() {
-    // Calculate total expenses paid to all workers
-    const totalWorkerExpenses = state.workers.reduce((total, worker) => {
-        const workerTotalPaid = (worker.payments || []).reduce((sum, payment) => sum + payment.amount, 0);
-        return total + workerTotalPaid;
-    }, 0);
     const activeWorkers = state.workers.length;
+    const totalProjects = state.projects.length;
     const mainGridHTML = appModules.map(createCardHTML).join('');
 
     return `
@@ -1565,8 +1659,8 @@
         </div>
         <div class="kpis" style="margin-top:12px">
             <div class="kpi">
-                <div style="font-size:18px;font-weight:800">${totalWorkerExpenses.toLocaleString()} د.ج</div>
-                <div style="font-size:12px;opacity:.9">إجمالي المصاريف</div>
+                <div style="font-size:18px;font-weight:800">${totalProjects}</div>
+                <div style="font-size:12px;opacity:.9">إجمالي المشاريع</div>
             </div>
             <div class="kpi">
                 <div style="font-size:18px;font-weight:800">${activeWorkers}</div>
@@ -1974,111 +2068,11 @@
     return { totalDue, totalPaid, presentDays, absentDays };
   }
 
-  function getClientsView() {
-    const clientsListHTML = state.clients && state.clients.length > 0
-        ? state.clients.map(client => {
-            const projectsCount = state.projects.filter(p => p.clientId === client.id).length;
-            return `
-            <div class="card" data-action="view-client" data-id="${client.id}" style="flex-direction: row; justify-content: space-between; align-items: center; text-align: right; margin-bottom: 12px; padding: 12px 16px;">
-                <div style="display:flex; align-items:center; gap: 12px; flex-grow: 1;">
-                    ${client.imageUrl
-                        ? `<img src="${client.imageUrl}" alt="${client.name}" style="width:48px; height:48px; border-radius: 50%; object-fit: cover;">`
-                        : `<div class="icon" style="width:48px; height:48px; background: linear-gradient(135deg,#2563eb,#3b82f6); font-size: 20px; margin-bottom: 0;"><i class="fas fa-user-tie"></i></div>`
-                    }
-                    <div>
-                        <div style="font-weight: 700;">${client.name}</div>
-                        <div style="font-size: 13px; color: var(--muted);">${projectsCount > 0 ? `${projectsCount} مشروع مرتبط` : 'لا توجد مشاريع'}</div>
-                    </div>
-                </div>
-                ${client.phone ? `<a href="tel:${client.phone}" onclick="event.stopPropagation()" class="btn ghost" style="padding: 6px 10px; flex-shrink: 0;"><i class="fas fa-phone"></i></a>` : ''}
-            </div>
-        `}).join('')
-        : `<p style="text-align:center; color:var(--muted); padding: 20px;">لم يتم إضافة أي عملاء بعد.</p>`;
-
-    return `
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px;">
-            <h3 style="margin:0; font-weight:800">إدارة العملاء</h3>
-            <div>
-                <button id="addClientBtn" class="btn" style="margin-left: 8px;"><i class="fas fa-plus" style="margin-left: 6px;"></i> إضافة عميل</button>
-                <button onclick="renderView('home')" class="btn"><i class="fas fa-arrow-right" style="margin-left: 6px;"></i> العودة</button>
-            </div>
-        </div>
-        ${clientsListHTML}
-    `;
-  }
-
-  function getClientDetailsView(clientId) {
-    const client = state.clients.find(c => c.id === clientId);
-    if (!client) return `<p>لم يتم العثور على العميل.</p><button id="backToClients">العودة</button>`;
-
-    const clientProjects = state.projects.filter(p => p.clientId === clientId);
-    const projectsHTML = clientProjects.length > 0
-        ? clientProjects.map(p => `<div class="activity-log-item" style="cursor: pointer;" onclick="renderView('project-details', {id: ${p.id}})">${p.name}</div>`).join('')
-        : `<p style="text-align:center; color:var(--muted);">لا توجد مشاريع مرتبطة بهذا العميل.</p>`;
-
-
-    return `
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px;">
-            <h3 style="margin:0; font-weight:800">تفاصيل العميل</h3>
-            <button id="backToClients" class="btn"><i class="fas fa-arrow-right" style="margin-left: 6px;"></i> العودة</button>
-        </div>
-
-        <div class="card" style="cursor:default; transform:none; padding: 20px; align-items: stretch; text-align: right;">
-            <div style="display: flex; align-items: center; gap: 16px; padding-bottom: 16px; margin-bottom: 16px; border-bottom: 1px solid var(--border-color);">
-                ${client.imageUrl
-                    ? `<img src="${client.imageUrl}" alt="${client.name}" style="width:64px; height:64px; border-radius: 50%; object-fit: cover; flex-shrink: 0;">`
-                    : `<div class="icon" style="width:64px; height:64px; background: linear-gradient(135deg,#2563eb,#3b82f6); font-size: 28px; margin-bottom: 0; flex-shrink: 0;"><i class="fas fa-user-tie"></i></div>`
-                }
-                <div style="flex-grow: 1;">
-                    <h2 style="margin: 0 0 4px; font-size: 20px;">${client.name}</h2>
-                    <p style="margin: 0; color: var(--muted); font-size: 14px;">${client.email || 'لا يوجد بريد إلكتروني'}</p>
-                </div>
-                <button id="editClientBtn" data-id="${client.id}" class="btn ghost" style="align-self: flex-start;"><i class="fas fa-edit"></i></button>
-            </div>
-            
-            <div class="grid-cards" style="grid-template-columns: 1fr 1fr; margin-top: 0; margin-bottom: 16px;">
-                ${client.phone ? `
-                    <a href="tel:${client.phone}" class="btn" style="background-color: #10b981; text-decoration: none;">
-                        <i class="fas fa-phone" style="margin-left: 8px;"></i> اتصال
-                    </a>` : ''}
-                ${client.email ? `
-                    <a href="mailto:${client.email}" class="btn" style="background-color: #3b82f6; text-decoration: none;">
-                        <i class="fas fa-envelope" style="margin-left: 8px;"></i> إيميل
-                    </a>` : ''}
-            </div>
-
-            ${client.address || client.notes ? `
-            <div style="background: var(--bg); padding: 12px; border-radius: 8px; margin-top: 12px;">
-                ${client.address ? `
-                    <div>
-                        <div style="font-size:13px; color:var(--muted);">العنوان</div>
-                        <div style="font-weight:500; font-size:15px; margin-top: 4px;">${client.address}</div>
-                    </div>
-                ` : ''}
-                ${client.notes ? `
-                    <div style="${client.address ? 'margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border-color);' : ''}">
-                        <div style="font-size:13px; color:var(--muted);">ملاحظات</div>
-                        <div style="font-weight:500; font-size:15px; margin-top: 4px; white-space: pre-wrap;">${client.notes}</div>
-                    </div>
-                ` : ''}
-            </div>` : ''}
-        </div>
-
-        <h4 style="margin: 24px 0 12px; font-weight:700;">المشاريع المرتبطة</h4>
-        <div id="clientProjectsList">
-            ${projectsHTML}
-        </div>
-    `;
-  }
-
   function getProjectDetailsView(projectId) {
     const activeTab = state.currentView.params.tab || 'overview';
     const project = state.projects.find(p => p.id === projectId);
     if (!project) return `<p>لم يتم العثور على المشروع.</p><button id="backToProjects">العودة</button>`;
 
-
-    const client = project.clientId ? state.clients.find(c => c.id === project.clientId) : null;
-    
     // Financial Calculations
     const clientPayments = state.projectPayments.filter(p => p.projectId === projectId);
     const totalReceived = clientPayments.reduce((sum, p) => sum + p.amount, 0);
@@ -2159,17 +2153,20 @@
         const paymentStatusHTML = isMaterial && e.paymentStatus === 'unpaid' ? `<span class="status-badge" style="background-color: #ef4444; font-size: 10px; margin-right: 8px;">غير مدفوع</span>` : '';
 
         return `
-        <div class="activity-log-item" style="cursor: pointer;" onclick="renderView('expense-details', {id: ${e.id}})">
-            <div style="display:flex; align-items:center; gap: 12px;">
+        <div class="activity-log-item">
+            <div style="display:flex; align-items:center; gap: 12px; flex-grow: 1; cursor: pointer;" onclick="renderView('expense-details', {id: ${e.id}})">
                 <div class="icon" style="width:36px; height:36px; font-size: 16px; margin:0; background: var(--bg); color: var(--muted);"><i class="fas ${icon}"></i></div>
                 <div>
                     <div style="font-weight: 700; display: flex; align-items: center;">${paymentStatusHTML} ${e.description}</div>
                     ${linkedTo ? `<div style="font-size: 13px; color: var(--muted);"><i class="fas ${isMaterial ? 'fa-truck' : 'fa-user'}" style="margin-left: 4px;"></i> ${linkedTo}</div>` : ''}
                 </div>
             </div>
-            <div style="text-align: left;">
+            <div style="text-align: left; display: flex; align-items: center; gap: 8px;">
                 <div style="font-weight: 700; font-size: 15px; color: #ef4444;">-${e.amount.toLocaleString()} د.ج</div>
-                <div style="font-size: 12px; color: var(--muted);">${new Date(e.date).toLocaleDateString('ar-DZ')}</div>
+                <!-- *** إضافة: زر تعديل النفقة مباشرة من القائمة *** -->
+                <button class="btn ghost" data-action="edit-expense" data-id="${e.id}" data-context="project" style="padding: 4px 8px; font-size: 12px;">
+                    <i class="fas fa-edit"></i>
+                </button>
             </div>
         </div>`;}).join('');
 
@@ -2184,7 +2181,7 @@
         ? expensesListHTML(3) + (projectExpenses.length > 3 ? `<button id="showAllExpensesBtn" data-id="${projectId}" class="btn" style="width: 100%; margin-top: 12px; background: var(--bg); color: var(--text-primary); border: 1px solid var(--border-color);"><i class="fas fa-list-ul" style="margin-left: 8px;"></i> عرض الكل (${projectExpenses.length})</button>` : '')
         : `<p style="text-align:center; color:var(--muted);">لا توجد نفقات مسجلة لهذا المشروع.</p>`;
 
-    const financeTabContent = `
+    const financeTabContent = ` 
         <div style="display:flex; justify-content:space-between; align-items:center; margin: 20px 0 12px;">
             <h4 style="margin:0; font-weight:700;">الدفعات المستلمة من العميل</h4>
             <button id="addProjectPaymentBtn" data-id="${project.id}" class="btn" style="background-color:#10b981;"><i class="fas fa-plus" style="margin-left:6px;"></i> إضافة دفعة</button>
@@ -2192,7 +2189,7 @@
         ${limitedPaymentsHTML}
         <div style="display:flex; justify-content:space-between; align-items:center; margin: 24px 0 12px;">
             <h4 style="margin:0; font-weight:700;">نفقات المشروع</h4>
-            <button id="addExpenseForProjectBtn" data-id="${project.id}" class="btn" style="background-color:#ef4444;"><i class="fas fa-plus" style="margin-left:6px;"></i> إضافة نفقة</button>
+            <button data-action="add-expense" data-project-id="${project.id}" class="btn" style="background-color:#ef4444;"><i class="fas fa-plus" style="margin-left:6px;"></i> إضافة نفقة</button>
         </div>${limitedExpensesHTML} 
     `;
 
@@ -2229,7 +2226,6 @@
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px;">
             <div style="display: flex; align-items: center;">
                 <h3 style="margin:0 0 4px; font-weight:800">${project.name}</h3>
-                ${client ? `<div style="font-size: 14px; color: var(--muted); cursor: pointer;" onclick="renderView('client-details', {id: ${client.id}})">العميل: ${client.name}</div>` : ''}
             </div>
             <div>
                 <!-- *** إضافة: زر جديد لتحليل المشروع بالذكاء الاصطناعي *** -->
@@ -2329,8 +2325,8 @@
 
   // *** إضافة: دالة لفتح نافذة عرض كل الدفعات ***
   function openAllPaymentsModal(projectId) {
-    // إغلاق النوافذ الأخرى لتجنب التداخل
-    document.getElementById('allExpensesModal').style.display = 'none';
+      // إغلاق النوافذ الأخرى لتجنب التداخل 
+    closeModal('allExpensesModal');
 
     const clientPayments = state.projectPayments.filter(p => p.projectId === projectId);
 
@@ -2359,13 +2355,13 @@
     ` : '<p style="text-align:center; color:var(--muted);">لا توجد دفعات مسجلة.</p>';
 
     document.getElementById('allPaymentsContent').innerHTML = allPaymentsHTML;
-    document.getElementById('allPaymentsModal').style.display = 'flex';
+    openModal('allPaymentsModal');
   }
 
   // *** إضافة: دالة لفتح نافذة عرض كل النفقات ***
   function openAllExpensesModal(projectId) {
     // إغلاق النوافذ الأخرى لتجنب التداخل
-    document.getElementById('allPaymentsModal').style.display = 'none';
+    closeModal('allPaymentsModal');
 
     const projectExpenses = state.expenses.filter(e => e.projectId === projectId);
 
@@ -2386,12 +2382,12 @@
     ` : '<p style="text-align:center; color:var(--muted);">لا توجد نفقات مسجلة.</p>';
 
     document.getElementById('allExpensesContent').innerHTML = allExpensesHTML;
-    document.getElementById('allExpensesModal').style.display = 'flex';
+    openModal('allExpensesModal');
   }
   
   // *** إضافة: دالة لإغلاق نافذة عرض كل النفقات ***
   function closeAllExpensesModal() {
-      document.getElementById('allExpensesModal').style.display = 'none';
+      closeModal('allExpensesModal');
   }
 
 
@@ -2428,11 +2424,11 @@
         ${expensesHTML || '<p style="text-align:center; color:var(--muted);">لا توجد نفقات.</p>'}`;
 
     document.getElementById('projectFullFinanceContent').innerHTML = fullLogHTML;
-    document.getElementById('projectFullFinanceModal').style.display = 'flex';
+    openModal('projectFullFinanceModal');
 
     // Attach listener to close other modals if they are open
     const allPaymentsModal = document.getElementById('allPaymentsModal');
-    if (allPaymentsModal) allPaymentsModal.style.display = 'none';
+    if (allPaymentsModal) closeModal('allPaymentsModal');
   }
 
 
@@ -2571,22 +2567,25 @@
 
 
             return `
-                <div class="card" data-action="view-expense" data-id="${expense.id}" style="flex-direction: row; justify-content: space-between; align-items: center; text-align: right; margin-bottom: 12px; padding: 12px 16px;">
-                    <div style="display:flex; align-items:center; gap: 12px;">
+                <div class="card" style="flex-direction: row; justify-content: space-between; align-items: center; text-align: right; margin-bottom: 12px; padding: 12px 16px;">
+                    <div data-action="view-expense" data-id="${expense.id}" style="display:flex; align-items:center; gap: 12px; flex-grow: 1; cursor: pointer;">
                         ${expense.receiptUrl
                             ? `<img src="${expense.receiptUrl}" alt="إيصال" style="width:48px; height:48px; border-radius: 8px; object-fit: cover;">`
                             : `<div class="icon" style="width:48px; height:48px; background: linear-gradient(135deg,#ef4444,#dc2626); font-size: 20px; margin-bottom: 0;"><i class="fas fa-receipt"></i></div>`
                         }
                         <div style="flex-grow: 1;">
                             <div style="font-weight: 700;">${expense.description}</div>
-                            <div style="font-size: 13px; color: var(--muted);">${new Date(expense.date).toLocaleDateString('ar-DZ')}</div>
                             ${linkedToHTML}
                             ${supplierHTML}
                         </div>
                     </div>
-                    <div style="text-align: left;">
+                    <div style="text-align: left; display: flex; align-items: center; gap: 8px;">
                         ${isUnpaid ? `<div class="status-badge" style="background-color: #ef4444; font-size: 10px; margin-bottom: 4px;">غير مدفوع</div>` : ''}
                         <div style="font-weight: 700; font-size: 15px; color: #ef4444;">${expense.amount.toLocaleString()} د.ج</div>
+                        <!-- *** تحسين: إضافة سياق الزر ليعرف من أين تم النقر *** -->
+                        <button class="btn ghost" data-action="edit-expense" data-id="${expense.id}" data-context="expenses" style="padding: 4px 8px; font-size: 12px;">
+                            <i class="fas fa-edit"></i>
+                        </button>
                     </div>
                 </div>`;
         }).join('')
@@ -2596,7 +2595,7 @@
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px;">
             <h3 style="margin:0; font-weight:800">إدارة النفقات</h3>
             <div>
-                <button id="addExpenseBtn" class="btn" style="margin-left: 8px;"><i class="fas fa-plus" style="margin-left: 6px;"></i> إضافة نفقة</button>
+                <button data-action="add-expense" class="btn" style="margin-left: 8px;"><i class="fas fa-plus" style="margin-left: 6px;"></i> إضافة نفقة</button>
                 <button onclick="renderView('home')" class="btn"><i class="fas fa-arrow-right" style="margin-left: 6px;"></i> العودة</button>
             </div>
         </div>
@@ -2652,7 +2651,8 @@
             </div>
         </div>
         <div class="form-actions" style="margin-bottom: 16px;">
-                <button id="editExpenseBtn" data-id="${expense.id}" class="btn ghost" style="flex: 1;"><i class="fas fa-edit" style="margin-left: 8px;"></i> تعديل</button>
+                <!-- *** إصلاح: إضافة data-action ليعمل الزر مع Event Delegation وإزالة الـ ID غير الضروري *** -->
+                <button data-action="edit-expense" data-id="${expense.id}" class="btn ghost" style="flex: 1;"><i class="fas fa-edit" style="margin-left: 8px;"></i> تعديل</button>
                 <button id="analyzeExpenseBtn" data-id="${expense.id}" class="btn ghost" style="margin-left:8px; color: #0ea5e9; border-color: #0ea5e9;"><i class="fas fa-robot"></i></button>
                 <button id="printExpenseBtn" data-id="${expense.id}" class="btn ghost" style="margin-left:8px;"><i class="fas fa-print"></i></button>
             </div>
@@ -2740,8 +2740,8 @@
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px;">
             <h3 style="margin:0; font-weight:800">مخزون الأدوات</h3>
             <div>
-                <button id="addInventoryBtn" class="btn" style="margin-left: 8px;"><i class="fas fa-plus" style="margin-left: 6px;"></i> إضافة أداة</button>
-                <button onclick="renderView('more_features')" class="btn"><i class="fas fa-arrow-right" style="margin-left: 6px;"></i> العودة</button>
+                <button id="addInventoryBtn" class="btn" style="margin-left: 8px;"><i class="fas fa-plus" style="margin-left: 6px;"></i> إضافة أداة</button> 
+                <button onclick="renderView('home')" class="btn"><i class="fas fa-arrow-right" style="margin-left: 6px;"></i> العودة</button>
             </div>
         </div>
         ${inventoryListHTML}
@@ -2898,6 +2898,166 @@
             <i class="fas fa-chevron-left" style="color: var(--muted); align-self: center;"></i>
         </div>
     `;
+  }
+
+  async function refreshDebtsView() {
+    // Refresh the state data
+    state.debts = await db.debts.toArray();
+    // Re-render the view
+    renderView('debts_feature');
+  }
+
+  function getDebtsView() {
+    const debts = state.debts || [];
+    const totalDebts = debts.reduce((sum, debt) => sum + (debt.remaining || 0), 0);
+    const totalOriginal = debts.reduce((sum, debt) => sum + (debt.amount || 0), 0);
+
+    const debtRows = debts.map(debt => {
+        const progress = debt.amount > 0 ? ((debt.amount - debt.remaining) / debt.amount) * 100 : 0;
+        return `
+            <tr onclick="renderView('debt-details', { id: ${debt.id} })" style="cursor:pointer;">
+                <td>
+                    <div style="font-weight: 700;">${debt.person}</div>
+                    <div style="font-size: 12px; color: var(--muted);">${debt.notes || 'لا توجد ملاحظات'}</div>
+                </td>
+                <td class="amount-col negative">
+                    ${debt.remaining.toLocaleString()}&nbsp;د.ج
+                </td>
+                <td class="hide-on-mobile">
+                    <div style="width: 100%; background: var(--bg); border-radius: 4px; overflow: hidden;">
+                        <div style="width: ${progress}%; background: var(--primary); height: 8px;"></div>
+                    </div>
+                    <div style="font-size: 11px; color: var(--muted); margin-top: 4px;">${Math.round(progress)}% مسدد</div>
+                </td>
+                <td class="icon-cell">
+                    <button onclick="event.stopPropagation(); openDebtPaymentModal(${debt.id});" class="btn ghost" title="تسجيل دفعة" style="padding: 4px 8px; font-size: 12px; color: #10b981; border-color: #10b981;">
+                        <i class="fas fa-money-bill-wave"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+    }).join('');
+
+    const debtsTable = debts.length > 0 ? `
+        <div class="card" style="cursor:default; transform:none; padding: 8px; align-items: stretch;">
+            <table class="professional-table">
+                <thead>
+                    <tr>
+                        <th>الشخص</th>
+                        <th style="text-align: left;">المبلغ المتبقي</th>
+                        <th class="hide-on-mobile" style="width: 120px;">التقدم</th>
+                        <th class="icon-cell"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${debtRows}
+                </tbody>
+            </table>
+        </div>
+    ` : `
+        <div class="card" style="cursor:default; transform:none; padding: 40px 20px; align-items: center; text-align: center;">
+            <div style="font-size: 40px; color: var(--primary); margin-bottom: 16px;"><i class="fas fa-file-invoice-dollar"></i></div>
+            <h3 style="margin:0 0 8px;">لا توجد ديون مسجلة</h3>
+            <p style="color:var(--muted); margin:0;">اضغط على "دين جديد" لإضافة قرض أو دين جديد.</p>
+        </div>
+    `;
+
+    return `
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px;">
+            <h3 style="margin:0; font-weight:800">سجل الديون والأقساط</h3>
+            <div>
+                <button onclick="openDebtModal()" class="btn" style="margin-left: 8px;"><i class="fas fa-plus" style="margin-left: 6px;"></i> دين جديد</button>
+                <button onclick="renderView('more_features')" class="btn"><i class="fas fa-arrow-right" style="margin-left: 6px;"></i> العودة</button>
+            </div>
+        </div>
+
+        <!-- Financial Summary -->
+        <div class="grid-cards" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 20px;">
+            <div class="card" style="cursor:default; transform:none; text-align:right; align-items:flex-start; padding:12px; border-left: 4px solid #ef4444;">
+                <div style="font-size:13px; color:var(--muted);">إجمالي الديون المتبقية</div>
+                <div style="font-weight:800; font-size:20px; color:#ef4444;">${totalDebts.toLocaleString()} د.ج</div>
+            </div>
+            <div class="card" style="cursor:default; transform:none; text-align:right; align-items:flex-start; padding:12px; border-left: 4px solid var(--muted);">
+                <div style="font-size:13px; color:var(--muted);">إجمالي الديون الأصلية</div>
+                <div style="font-weight:800; font-size:20px; color:var(--muted);">${totalOriginal.toLocaleString()} د.ج</div>
+            </div>
+        </div>
+
+        ${debtsTable}
+    `;
+}
+
+  // *** إضافة: دالة لإنشاء واجهة تفاصيل الدين ***
+  function getDebtDetailsView(debtId) {
+    const debt = state.debts.find(d => d.id === debtId);
+    if (!debt) return `<p>لم يتم العثور على الدين.</p><button id="backToDebts">العودة</button>`;
+
+    const amount = debt.amount || 0;
+    const remaining = debt.remaining || 0;
+    const paid = amount - remaining;
+    const progress = amount > 0 ? (paid / amount) * 100 : 0;
+
+    const paymentsHTML = (debt.payments && debt.payments.length > 0)
+        ? debt.payments.sort((a, b) => new Date(b.date) - new Date(a.date)).map(p => `
+            <div class="activity-log-item">
+                <div style="display:flex; align-items:center;">
+                    <div class="icon" style="color: #10b981; background: rgba(16,185,129,.1);"><i class="fas fa-money-bill-wave"></i></div>
+                    <div>
+                        <div style="font-weight:500;">دفعة مسددة: ${p.amount.toLocaleString()} د.ج</div>
+                        <div style="font-size:13px; color:var(--muted);">${new Date(p.date).toLocaleDateString('ar-DZ')}</div>
+                        ${p.notes ? `<div class="note"><i class="fas fa-quote-right" style="margin-left: 4px; opacity: 0.7;"></i> ${p.notes}</div>` : ''}
+                    </div>
+                </div>
+            </div>
+        `).join('')
+        : `<p style="text-align:center; color:var(--muted); padding: 20px;">لا توجد دفعات مسجلة لهذا الدين.</p>`;
+
+    return `
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px;">
+            <h3 style="margin:0; font-weight:800">تفاصيل دين: ${debt.person}</h3> 
+            <div>
+                <button id="analyzeDebtBtn" data-id="${debt.id}" class="btn ghost" style="margin-left:8px; color: #0ea5e9; border-color: #0ea5e9;"><i class="fas fa-robot"></i> تحليل</button>
+                <button id="editDebtBtn" data-id="${debt.id}" class="btn ghost" style="margin-left:8px;"><i class="fas fa-edit"></i> تعديل</button>
+                <button id="backToDebts" class="btn"><i class="fas fa-arrow-right" style="margin-left: 6px;"></i> العودة</button>
+            </div>
+        </div>
+
+        <!-- Financial Summary -->
+        <div class="grid-cards" style="grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); margin-top:0; margin-bottom: 20px;">
+            <div class="card" style="cursor:default; transform:none; text-align:right; align-items:flex-start; padding:12px;">
+                <div style="font-size:13px; color:var(--muted);">المبلغ الإجمالي</div>
+                <div style="font-weight:800; font-size:18px; color:var(--primary);">${amount.toLocaleString()} د.ج</div>
+            </div>
+            <div class="card" style="cursor:default; transform:none; text-align:right; align-items:flex-start; padding:12px;">
+                <div style="font-size:13px; color:var(--muted);">المبلغ المدفوع</div>
+                <div style="font-weight:800; font-size:18px; color:#10b981;">${paid.toLocaleString()} د.ج</div>
+            </div>
+            <div class="card" style="cursor:default; transform:none; text-align:right; align-items:flex-start; padding:12px;">
+                <div style="font-size:13px; color:var(--muted);">المبلغ المتبقي</div>
+                <div style="font-weight:800; font-size:18px; color:#ef4444;">${remaining.toLocaleString()} د.ج</div>
+            </div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="card" style="cursor:default; transform:none; padding: 16px; margin-bottom: 20px; align-items: stretch;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 8px; width:100%;">
+                <h4 style="margin:0; font-weight:700; font-size: 14px;">نسبة السداد</h4>
+                <span style="font-weight: 700; color: var(--primary);">${Math.round(progress)}%</span>
+            </div>
+            <div style="width: 100%; background: var(--bg); border-radius: 8px; overflow: hidden; height: 12px;">
+                <div style="width: ${progress}%; background: var(--primary); height: 100%; border-radius: 8px;"></div>
+            </div>
+        </div>
+
+        <!-- Actions & Activity Log -->
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px;">
+            <h4 style="margin:0; font-weight:700;">سجل الدفعات</h4>
+            <button id="addDebtPaymentBtn" data-id="${debt.id}" class="btn" style="background-color:#10b981;"><i class="fas fa-plus" style="margin-left:6px;"></i> تسجيل دفعة</button>
+        </div>
+        <div id="debtPaymentsLog">
+            ${paymentsHTML}
+        </div>
+  `;
   }
 
   function getApiSettingsView() {
@@ -3246,19 +3406,9 @@
 
   // --- Expense Modal ---
   function closeAllExpenseModals() {
-      // إغلاق جميع النوافذ المنبثقة المتعلقة بالنفقات
-      const modals = [
-          'allExpensesModal',
-          'projectFullFinanceModal',
-          'expenseModal'
-      ];
-      
-      modals.forEach(modalId => {
-          const modal = document.getElementById(modalId);
-          if (modal) {
-              modal.style.display = 'none';
-          }
-      });
+      closeModal('allExpensesModal');
+      closeModal('projectFullFinanceModal');
+      closeModal('expenseModal');
   }
 
   function openExpenseModal(expenseId = null, prefill = {}) {
@@ -3280,9 +3430,15 @@
       const expensePaymentStatusInput = document.getElementById('expensePaymentStatus');
       const deleteExpenseBtn = document.getElementById('deleteExpenseBtn');
       const expenseImageDataBase64 = document.getElementById('expenseImageDataBase64');
+      // *** إصلاح: تعريف المتغير الذي كان يسبب الخطأ ***
+      const expenseModalContextInput = document.getElementById('expenseModalContext');
       const expenseImagePreview = document.getElementById('expenseImagePreview');
 
       if (!expenseForm) return; // Safety check
+
+      // *** إضافة: تخزين السياق الحالي لتحديد وجهة العودة بعد الحفظ ***
+      const currentContext = state.currentView.name;
+      expenseModalContextInput.value = currentContext;
 
       expenseForm.reset();
       resetExpenseImagePreview();
@@ -3324,7 +3480,7 @@
           }
       }
       
-      expenseModal.style.display = 'flex';
+      openModal('expenseModal');
   }
 
   function closeExpenseModal() {
@@ -3389,11 +3545,15 @@
       } else {
           await db.expenses.add(expenseData);
       }
-      // After saving, decide where to go back
-      if (projectId) {
+      // *** تحسين: توجيه ذكي بعد الحفظ بناءً على السياق ***
+      const context = document.getElementById('expenseModalContext').value;
+      if (context === 'project-details' && projectId) {
           renderView('project-details', { id: projectId, tab: 'finance' });
+      } else if (context === 'expense-details') {
+          // إذا كنا في صفحة التفاصيل، نعود خطوة للوراء
+          goBackToPreviousView();
       } else {
-          renderView('expenses');
+          renderView('expenses', state.currentView.params);
       }
       closeExpenseModal();
   }
@@ -3446,12 +3606,29 @@
   function openConfirmModal(message, onConfirm) {
       onConfirmCallback = onConfirm;
       confirmModalMessage.innerHTML = message;
-      confirmModal.style.display = 'flex';
+      openModal('confirmModal');
   }
 
   function closeConfirmModal() {
-      confirmModal.style.display = 'none';
+      closeModal('confirmModal');
       onConfirmCallback = null;
+  }
+
+  // *** إضافة: دوال موحدة لفتح وإغلاق النوافذ المنبثقة ***
+  function openModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.classList.remove('modal-hidden');
+        document.body.style.overflow = 'hidden';
+    }
+  }
+
+  function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.classList.add('modal-hidden');
+        document.body.style.overflow = '';
+    }
   }
 
   // --- Event Details Modal ---
@@ -3489,10 +3666,10 @@
           handleAnalysisRequest('event', eventId);
       };
 
-      eventDetailsModal.style.display = 'flex';
+      openModal('eventDetailsModal');
   }
   function closeEventDetailsModal() {
-      eventDetailsModal.style.display = 'none';
+      closeModal('eventDetailsModal');
   }
 
   // --- Calendar Event Modal Functions ---
@@ -3526,11 +3703,11 @@
           eventEndDateInput.valueAsDate = new Date();
           deleteEventBtn.style.display = 'none';
       }
-      eventModal.style.display = 'flex';
+      openModal('eventModal');
   }
 
   function closeEventModal() {
-      eventModal.style.display = 'none';
+      closeModal('eventModal');
   }
 
   async function handleEventFormSubmit(e) {
@@ -3575,11 +3752,11 @@
       lendItemForm.reset();
       document.getElementById('lendItemId').value = itemId;
       document.getElementById('borrowDate').valueAsDate = new Date();
-      lendItemModal.style.display = 'flex';
+      openModal('lendItemModal');
   }
 
   function closeLendModal() {
-      lendItemModal.style.display = 'none';
+      closeModal('lendItemModal');
   }
 
   async function handleLendFormSubmit(e) {
@@ -3594,7 +3771,6 @@
           borrowDate: borrowDate
       });
       closeLendModal();
-      renderView('inventory-details', { id: itemId });
   }
 
   async function handleReturnItem(itemId) {
@@ -3641,11 +3817,11 @@
           inventoryIdInput.value = '';
           deleteInventoryBtn.style.display = 'none';
       }
-      inventoryModal.style.display = 'flex';
+      openModal('inventoryModal');
   }
 
   function closeInventoryModal() {
-      inventoryModal.style.display = 'none';
+      closeModal('inventoryModal');
   }
 
   function resetInventoryImagePreview() {
@@ -3742,12 +3918,12 @@
               }
               deleteNoteBtn.style.display = 'inline-block';
           }
-          noteModal.style.display = 'flex';
+          openModal('noteModal');
       }
   }
 
   function closeNoteModal() {
-      noteModal.style.display = 'none';
+      closeModal('noteModal');
   }
 
   async function handleNoteFormSubmit(e) {
@@ -3788,10 +3964,76 @@
       closeInventoryModal();
   }
 
+  // *** إضافة: دوال خاصة بنافذة الديون ***
+  function openDebtModal(debtId = null) {
+      const modal = document.getElementById('debtModal');
+      const form = document.getElementById('debtForm');
+      const titleEl = document.getElementById('debtModalTitle');
+      const deleteBtn = document.getElementById('deleteDebtBtn');
+
+      form.reset();
+      deleteBtn.style.display = 'none';
+
+      if (debtId) {
+          const debt = state.debts.find(d => d.id === debtId);
+          if (debt) {
+              titleEl.textContent = 'تعديل الدين';
+              document.getElementById('debtId').value = debt.id;
+              document.getElementById('debtPerson').value = debt.person;
+              document.getElementById('debtAmount').value = debt.amount;
+              document.getElementById('debtDueDate').value = debt.dueDate || '';
+              document.getElementById('debtNotes').value = debt.notes || '';
+              deleteBtn.style.display = 'inline-block';
+          }
+      } else {
+          titleEl.textContent = 'إضافة دين جديد';
+          document.getElementById('debtId').value = '';
+          // *** إصلاح: تعيين تاريخ الاستحقاق إلى تاريخ اليوم تلقائياً ***
+          document.getElementById('debtDueDate').valueAsDate = new Date();
+      }
+
+      openModal('debtModal');
+  }
+
+  function closeDebtModal() {
+      closeModal('debtModal');
+  }
+
+  async function handleDebtFormSubmit(e) {
+      e.preventDefault();
+      const id = document.getElementById('debtId').value ? parseInt(document.getElementById('debtId').value) : null;
+      const amount = parseFloat(document.getElementById('debtAmount').value) || 0;
+
+      const debtData = {
+          person: document.getElementById('debtPerson').value,
+          amount: amount,
+          dueDate: document.getElementById('debtDueDate').value,
+          notes: document.getElementById('debtNotes').value,
+      };
+
+      if (id) {
+          // عند التحديث، لا نغير المبلغ المتبقي أو الدفعات، فقط المعلومات الأساسية
+          // *** إصلاح: الحفاظ على البيانات الموجودة عند التحديث ***
+          const existingDebt = await db.debts.get(id);
+          if (existingDebt) {
+              // دمج البيانات الجديدة مع القديمة
+              const updatedDebt = { ...existingDebt, ...debtData };
+              await db.debts.update(id, updatedDebt);
+          } else {
+              await db.debts.update(id, debtData); // Fallback
+          }
+      } else {
+          // عند الإضافة، نهيئ المبلغ المتبقي والدفعات
+          debtData.remaining = amount;
+          debtData.payments = [];
+          await db.debts.add(debtData);
+      }
+      closeDebtModal();
+      renderView('debts_feature');
+  }
 
 
   function openSupplierModal(supplierId = null) {
-      supplierForm.reset();
       resetSupplierImagePreview();
       if (supplierId) {
           const supplier = state.suppliers.find(s => s.id === supplierId);
@@ -3814,13 +4056,11 @@
           supplierIdInput.value = '';
           deleteSupplierBtn.style.display = 'none';
       }
-      supplierModal.style.display = 'flex';
-      document.body.style.overflow = 'hidden';
+      openModal('supplierModal');
   }
 
   function closeSupplierModal() {
-      supplierModal.style.display = 'none';
-      document.body.style.overflow = '';
+      closeModal('supplierModal');
   }
 
   function resetSupplierImagePreview() {
@@ -3882,19 +4122,18 @@
           workerIdInput.value = '';
           deleteWorkerBtn.style.display = 'none';
       }
-      workerModal.style.display = 'flex';
-      document.body.style.overflow = 'hidden';
+      openModal('workerModal');
   }
 
   function openAttendanceConfirmModal(data) {
       tempAttendanceData = data;
       const date = new Intl.DateTimeFormat('ar-DZ', { day: '2-digit', month: 'long', year: 'numeric' }).format(new Date(data.date));
       document.getElementById('confirmDate').textContent = date;
-      document.getElementById('attendanceConfirmModal').style.display = 'flex';
+      openModal('attendanceConfirmModal');
   }
 
   function closeAttendanceConfirmModal() { 
-      document.getElementById('attendanceConfirmModal').style.display = 'none';
+      closeModal('attendanceConfirmModal');
   }
 
   async function saveAttendance(status) {
@@ -3924,7 +4163,6 @@
           worker.settlements.push(settlementKey);
 
           await db.workers.update(workerId, { payments: worker.payments, settlements: worker.settlements });
-          await renderView('worker-details', { id: workerId, year, month });
       }
   }
 
@@ -3939,11 +4177,11 @@
       // Re-attach event listeners for delete buttons inside the modal
       logModalContent.querySelectorAll('.delete-activity').forEach(btn => btn.addEventListener('click', handleDeleteActivity));
 
-      document.getElementById('activityLogModal').style.display = 'flex';
+      openModal('activityLogModal');
   }
 
   function closeFullActivityLog() {
-      document.getElementById('activityLogModal').style.display = 'none';
+      closeModal('activityLogModal');
   }
 
   function resetImagePreview() {
@@ -3956,12 +4194,7 @@
   }
 
   function closeWorkerModal() {
-      workerModal.classList.add('is-exiting');
-      document.body.style.overflow = '';
-      setTimeout(() => {
-          workerModal.style.display = 'none';
-          workerModal.classList.remove('is-exiting');
-      }, 250);
+      closeModal('workerModal');
   }
 
   function showImagePreview(show) {
@@ -4000,11 +4233,11 @@
       if (type === 'bonus') title = 'تسجيل مكافأة (منحة)';
       document.getElementById('activityModalTitle').textContent = title;
       
-      activityModal.style.display = 'flex';
+      openModal('activityModal');
   }
 
   function closeActivityModal() {
-      activityModal.style.display = 'none';
+      closeModal('activityModal');
   }
 
   async function handleWorkerFormSubmit(e) {
@@ -4116,7 +4349,7 @@
           const { activityId, type } = btn.dataset;
           const worker = state.workers.find(w => w.id == workerId);
           if (!worker) return;
-
+  
           if (type === 'attendance' && worker.attendance) {
               worker.attendance = worker.attendance.filter(a => a.id != activityId);
               await db.workers.update(workerId, { attendance: worker.attendance });
@@ -4130,12 +4363,82 @@
           
           closeConfirmModal();
           await renderView('worker-details', { id: workerId });
-          if (document.getElementById('activityLogModal').style.display === 'flex') {
+          if (!document.getElementById('activityLogModal').classList.contains('modal-hidden')) {
               openFullActivityLog(workerId); // Refresh the full log modal if it's open
           }
       });
   }
   
+
+
+  function openDebtPaymentModal(debtId) {
+      const modal = document.getElementById('debtPaymentModal');
+      const form = document.getElementById('debtPaymentForm');
+      
+      form.reset();
+      document.getElementById('paymentDebtId').value = debtId;
+      document.getElementById('debtPaymentDate').valueAsDate = new Date();
+      
+      const debt = state.debts.find(d => d.id === debtId);
+      if (debt) {
+          document.getElementById('debtPaymentAmount').max = debt.remaining;
+      }
+      
+      openModal('debtPaymentModal');
+  }
+
+  function closeDebtPaymentModal() {
+      closeModal('debtPaymentModal');
+  }
+
+  async function handleDebtPaymentFormSubmit(e) {
+      e.preventDefault();
+      
+      const debtId = parseInt(document.getElementById('paymentDebtId').value);
+      const payment = {
+          amount: parseFloat(document.getElementById('debtPaymentAmount').value),
+          date: document.getElementById('debtPaymentDate').value,
+          notes: document.getElementById('debtPaymentNotes').value
+      };
+      
+      try {
+          const debt = await db.debts.get(debtId);
+          if (!debt) throw new Error('الدين غير موجود');
+          
+          // Check if payment amount is valid
+          if (payment.amount <= 0 || payment.amount > debt.remaining) {
+              showCustomToast('مبلغ الدفع غير صالح', 'error');
+              return;
+          }
+          
+          // Update debt
+          debt.payments = debt.payments || [];
+          debt.payments.push(payment);
+          debt.remaining -= payment.amount;
+          debt.lastPaymentDate = payment.date;
+
+          await db.debts.update(debtId, debt);
+
+          showToast('تم تسجيل الدفعة بنجاح');
+          closeDebtPaymentModal();
+          // *** إصلاح: تحديث واجهة تفاصيل الدين الحالية بدلاً من العودة للقائمة الرئيسية ***
+          renderView('debt-details', { id: debtId });
+      } catch (error) {
+          console.error('Error saving payment:', error);
+          showCustomToast('حدث خطأ أثناء حفظ الدفعة', 'error');
+      }
+  }
+
+  // *** إضافة: دالة لحذف الدين ***
+  function handleDeleteDebt(debtId) {
+      openConfirmModal('هل أنت متأكد من حذف هذا الدين؟', async () => {
+          await db.debts.delete(debtId);
+          closeConfirmModal();
+          renderView('debts_feature');
+          showToast('تم حذف الدين بنجاح.');
+      });
+  }
+
   async function printWorkerReport(workerId) {
     const worker = state.workers.find(w => w.id == workerId);
     if (!worker) return;
@@ -4221,9 +4524,49 @@
     window.print();
   }
 
-  // HTML for the new Project Modal
+
+
+  // HTML for the Debt Payment Modal
   document.body.insertAdjacentHTML('beforeend', `
-    <div id="projectModal" class="modal-container" style="display: none;">
+    <div id="debtPaymentModal" class="modal-container modal-hidden">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="debtPaymentModalTitle">تسجيل دفعة</h3>
+                <button class="close-btn" data-action="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="debtPaymentForm">
+                    <input type="hidden" id="debtPaymentId">
+                    <input type="hidden" id="paymentDebtId">
+                    
+                    <div class="form-group">
+                        <label for="debtPaymentAmount">المبلغ المدفوع (د.ج)</label>
+                        <input type="number" id="debtPaymentAmount" required min="0">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="debtPaymentDate">تاريخ الدفع</label>
+                        <input type="date" id="debtPaymentDate" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="debtPaymentNotes">ملاحظات (اختياري)</label>
+                        <textarea id="debtPaymentNotes" rows="3" placeholder="مثال: دفعة القسط الشهري..."></textarea>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn">حفظ الدفعة</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+  `);
+
+  // HTML for the new Project Modal
+  document.body.insertAdjacentHTML('beforeend', ` 
+    <div id="projectModal" class="modal-container modal-hidden">
         <div class="modal-backdrop"></div>
         <div class="modal-content">
             <div class="modal-header">
@@ -4268,62 +4611,9 @@
     </div>`);
 
 
-  // HTML for the new Client Modal
-  document.body.insertAdjacentHTML('beforeend', `
-    <div id="clientModal" class="modal-container" style="display: none;">
-        <div class="modal-backdrop"></div>
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 id="clientModalTitle">إضافة عميل جديد</h3>
-                <button class="close-btn" data-action="close-modal">&times;</button>
-            </div>
-            <div class="modal-body">
-                <form id="clientForm">
-                    <input type="hidden" id="clientId">
-                    <input type="hidden" id="clientImageDataBase64">
-
-                    <div class="form-group" style="text-align: center; position: relative;">
-                        <img id="clientImagePreview" src="" alt="صورة العميل" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid var(--border-color); display: none; margin: 0 auto 10px;">
-                        <button type="button" id="clientImageRemoveBtn" title="إزالة الصورة" style="position: absolute; top: -5px; left: 50%; transform: translateX(40px); width: 28px; height: 28px; border-radius: 50%; background: #ef4444; color: white; border: 2px solid var(--card); font-size: 14px; display: none; cursor: pointer; padding: 0; line-height: 1;">&times;</button>
-                        <div id="clientImagePlaceholder" class="icon" style="width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(135deg,#2563eb,#3b82f6); font-size: 40px; margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; cursor: pointer;">
-                            <i class="fas fa-user-tie"></i>
-                        </div>
-                        <input type="file" id="clientImageInput" accept="image/*" style="display: none;">
-                        <button type="button" id="clientImageUploadBtn" class="btn ghost" style="padding: 6px 12px; font-size: 13px;">اختر صورة</button>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="clientName">اسم العميل</label>
-                        <input type="text" id="clientName" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="clientPhone">رقم الهاتف</label>
-                        <input type="tel" id="clientPhone">
-                    </div>
-                    <div class="form-group">
-                        <label for="clientEmail">البريد الإلكتروني (اختياري)</label>
-                        <input type="email" id="clientEmail">
-                    </div>
-                    <div class="form-group">
-                        <label for="clientAddress">العنوان (اختياري)</label>
-                        <input type="text" id="clientAddress">
-                    </div>
-                    <div class="form-group">
-                        <label for="clientNotes">ملاحظات خاصة (اختياري)</label>
-                        <textarea id="clientNotes" rows="3" placeholder="أي تفاصيل مهمة عن العميل..."></textarea>
-                    </div>
-                    <div class="form-actions">
-                        <button type="submit" class="btn">حفظ</button>
-                        <button type="button" class="btn" id="deleteClientBtn" style="display: none; background-color: #ef4444;">حذف</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>`);
-
   // HTML for the new API Config Modal
-  document.body.insertAdjacentHTML('beforeend', `
-    <div id="apiConfigModal" class="modal-container" style="display: none;">
+  document.body.insertAdjacentHTML('beforeend', ` 
+    <div id="apiConfigModal" class="modal-container modal-hidden">
         <div class="modal-backdrop"></div>
         <div class="modal-content">
             <div class="modal-header">
@@ -4353,8 +4643,8 @@
     </div>`);
 
   // HTML for the new Profile Modal
-  document.body.insertAdjacentHTML('beforeend', `
-    <div id="profileModal" class="modal-container" style="display: none;">
+  document.body.insertAdjacentHTML('beforeend', ` 
+    <div id="profileModal" class="modal-container modal-hidden">
         <div class="modal-backdrop"></div>
         <div class="modal-content">
             <div class="modal-header">
@@ -4421,8 +4711,8 @@
     </div>`);
 
   // HTML for the new Expense Modal
-  document.body.insertAdjacentHTML('beforeend', `
-    <div id="expenseModal" class="modal-container" style="display: none;">
+  document.body.insertAdjacentHTML('beforeend', ` 
+    <div id="expenseModal" class="modal-container modal-hidden">
         <div class="modal-backdrop"></div>
         <div class="modal-content">
             <div class="modal-header">
@@ -4432,6 +4722,7 @@
             <div class="modal-body">
                 <form id="expenseForm">
                     <input type="hidden" id="expenseId">
+                    <input type="hidden" id="expenseModalContext"> <!-- *** إضافة: حقل لتخزين سياق الفتح *** -->
                     <input type="hidden" id="expenseImageDataBase64">
 
                     <div class="form-group" style="text-align: center; position: relative;">
@@ -4483,8 +4774,8 @@
     </div>`);
 
   // HTML for the new Project Payment Modal
-  document.body.insertAdjacentHTML('beforeend', `
-    <div id="projectPaymentModal" class="modal-container" style="display: none;">
+  document.body.insertAdjacentHTML('beforeend', ` 
+    <div id="projectPaymentModal" class="modal-container modal-hidden">
         <div class="modal-backdrop"></div>
         <div class="modal-content">
             <div class="modal-header">
@@ -4516,8 +4807,8 @@
     </div>`);
 
   // HTML for the new AI Analysis Modal
-  document.body.insertAdjacentHTML('beforeend', `
-    <div id="aiAnalysisModal" class="modal-container" style="display: none;">
+  document.body.insertAdjacentHTML('beforeend', ` 
+    <div id="aiAnalysisModal" class="modal-container modal-hidden">
         <div class="modal-backdrop"></div>
         <div class="modal-content" style="max-width: 500px;">
             <div class="modal-header">
@@ -4531,84 +4822,6 @@
     </div>`);
 
 
-
-  // Client Modal Functions
-  function openClientModal(clientId = null) {
-      const modal = document.getElementById('clientModal');
-      const titleEl = document.getElementById('clientModalTitle');
-      const form = document.getElementById('clientForm');
-      const deleteBtn = document.getElementById('deleteClientBtn');
-      const idInput = document.getElementById('clientId');
-
-      // Reset form
-      const imageRemoveBtn = document.getElementById('clientImageRemoveBtn');
-      if (imageRemoveBtn) {
-          resetClientImagePreview();
-      }
-      form.reset();
-      deleteBtn.style.display = 'none';
-
-      if (clientId) {
-          const client = state.clients.find(c => c.id === clientId);
-          if (client) {
-              titleEl.textContent = 'تعديل بيانات العميل';
-              document.getElementById('clientName').value = client.name;
-              document.getElementById('clientPhone').value = client.phone || '';
-              document.getElementById('clientEmail').value = client.email || '';
-              document.getElementById('clientAddress').value = client.address || '';
-              document.getElementById('clientNotes').value = client.notes || '';
-              if (client.imageUrl) {
-                  document.getElementById('clientImageDataBase64').value = client.imageUrl;
-                  document.getElementById('clientImagePreview').src = client.imageUrl;
-                  showClientImagePreview(true);
-              }
-              idInput.value = client.id;
-              deleteBtn.style.display = 'block';
-          }
-      } else {
-          titleEl.textContent = 'إضافة عميل جديد';
-          idInput.value = '';
-      }
-
-      modal.style.display = 'flex';
-  }
-
-  function closeClientModal() {
-      document.getElementById('clientModal').style.display = 'none';
-  }
-
-  async function handleClientFormSubmit(e) {
-      e.preventDefault();
-      
-      const clientData = {
-          name: document.getElementById('clientName').value,
-          phone: document.getElementById('clientPhone').value,
-          email: document.getElementById('clientEmail').value,
-          address: document.getElementById('clientAddress').value,
-          notes: document.getElementById('clientNotes').value,
-          imageUrl: document.getElementById('clientImageDataBase64').value,
-      };
-
-      const clientId = document.getElementById('clientId').value;
-      
-      try {
-          if (clientId) {
-              // Update existing client
-              await db.clients.update(parseInt(clientId), clientData);
-              showToast('تم تحديث بيانات العميل بنجاح');
-          } else {
-              // Add new client
-              await db.clients.add(clientData);
-              showToast('تم إضافة العميل بنجاح');
-          }
-          
-          closeClientModal();
-          renderView(clientId ? 'client-details' : 'clients', clientId ? { id: parseInt(clientId) } : {});
-      } catch (error) {
-          console.error('Error saving client:', error);
-          showCustomToast('حدث خطأ أثناء حفظ بيانات العميل', 'error');
-      }
-  }
 
   // Project Modal Functions
   function openProjectModal(projectId = null) {
@@ -4655,7 +4868,7 @@
           idInput.value = '';
       }
 
-      modal.style.display = 'flex';
+      openModal('projectModal');
   }
   // *** تحسين: دالة موحدة لتغيير حالة المشروع مع معالجة الأخطاء ***
   async function toggleProjectStatus(projectId, newStatus) {
@@ -4691,7 +4904,7 @@
   });
 
   function closeProjectModal() {
-      document.getElementById('projectModal').style.display = 'none';
+      closeModal('projectModal');
   }
 
   async function handleProjectFormSubmit(e) {
@@ -4702,8 +4915,7 @@
           // *** إضافة: حفظ القيم الجديدة في قاعدة البيانات ***
           homeownerName: document.getElementById('homeownerName').value,
           builderName: document.getElementById('builderName').value,
-          budget: parseFloat(document.getElementById('projectBudget').value) || 0,
-          // clientId is removed
+          budget: parseFloat(document.getElementById('projectBudget').value) || 0
       };
 
       const projectId = document.getElementById('projectId').value;
@@ -4756,11 +4968,11 @@
           document.getElementById('paymentDate').valueAsDate = new Date();
       }
 
-      modal.style.display = 'flex';
+      openModal('projectPaymentModal');
   }
 
   function closeProjectPaymentModal() {
-      document.getElementById('projectPaymentModal').style.display = 'none';
+      closeModal('projectPaymentModal');
   }
 
   async function handleProjectPaymentFormSubmit(e) {
@@ -4838,29 +5050,6 @@
       setTimeout(() => { toast.remove(); }, 6000); // Remove after 6 seconds if not undone
   }
 
-  function resetClientImagePreview() {
-      document.getElementById('clientImageDataBase64').value = '';
-      document.getElementById('clientImageInput').value = '';
-      const preview = document.getElementById('clientImagePreview');
-      preview.src = '';
-      preview.style.display = 'none';
-      document.getElementById('clientImagePlaceholder').style.display = 'flex';
-      document.getElementById('clientImageRemoveBtn').style.display = 'none';
-  }
-
-  function showClientImagePreview(show) {
-      const preview = document.getElementById('clientImagePreview');
-      const placeholder = document.getElementById('clientImagePlaceholder');
-      const removeBtn = document.getElementById('clientImageRemoveBtn');
-      preview.style.display = show ? 'block' : 'none';
-      placeholder.style.display = show ? 'none' : 'flex';
-      removeBtn.style.display = show ? 'inline-block' : 'none';
-  }
-
-  function deleteClient() {
-      // Implementation for deleting a worker will be added in the next step
-  }
-
   function switchProjectTab(tabId) {
     // Update URL without reloading to remember the tab
     const projectId = state.currentView.params.id;
@@ -4888,15 +5077,6 @@
     }, 1500);
   });
   
-  themeToggleHeader.addEventListener('click', toggleTheme);
-  mainContent.addEventListener('click', (e) => {
-    const card = e.target.closest('.card[data-key]');
-    if (card) {
-        renderView(card.dataset.key, {});
-    }
-  });
-
-
   mainNav.addEventListener('click', (e) => {
     const navItem = e.target.closest('.nav-item[data-view]');
     if (navItem) {
@@ -4907,9 +5087,6 @@
     }
   });
 
-  // *** إصلاح: ربط الأحداث للنماذج المضافة ديناميكياً ***
-  // تم نقل هذه الروابط هنا لضمان تنفيذها مرة واحدة بعد تحميل الصفحة
-  document.getElementById('projectForm').addEventListener('submit', handleProjectFormSubmit);
 
   // Worker Modal Listeners
   workerForm.addEventListener('submit', handleWorkerFormSubmit);
@@ -4982,12 +5159,6 @@
   });
 
 
-  // Client View Listeners
-  mainContent.addEventListener('click', (e) => {
-      if (e.target.closest('#addClientBtn')) { openClientModal(); }
-      if (e.target.closest('[data-action="view-client"]')) { renderView('client-details', { id: parseInt(e.target.closest('[data-action="view-client"]').dataset.id) }); }
-  });
-
   // Supplier Image Listeners
   supplierImageUploadBtn.addEventListener('click', () => supplierImageInput.click());
   supplierImagePlaceholder.addEventListener('click', () => supplierImageInput.click());
@@ -5056,49 +5227,6 @@
       reader.readAsDataURL(file);
   }
 
-  // Client Modal Listeners
-  // *** إصلاح: ربط الأحداث للنماذج المضافة ديناميكياً ***
-  const clientForm = document.getElementById('clientForm');
-  const clientModal = document.getElementById('clientModal');
-  const deleteClientBtn = document.getElementById('deleteClientBtn');
-
-  if (clientForm) {
-    clientForm.addEventListener('submit', handleClientFormSubmit);
-  }
-  if (clientModal) {
-    clientModal.addEventListener('click', (e) => {
-      if (e.target.dataset.action === 'close-modal' || e.target.classList.contains('modal-backdrop')) {
-          closeClientModal();
-      }
-  });
-  }
-  if (deleteClientBtn) {
-    deleteClientBtn.addEventListener('click', () => {
-      openConfirmModal('هل أنت متأكد من حذف هذا العميل؟', async () => {
-          const id = parseInt(document.getElementById('clientId').value);
-          await db.clients.delete(id);
-          renderView('clients');
-          closeClientModal();
-          closeConfirmModal();
-      });
-  });
-  }
-  // Client Image Listeners
-  document.getElementById('clientImageUploadBtn').addEventListener('click', () => document.getElementById('clientImageInput').click());
-  document.getElementById('clientImagePlaceholder').addEventListener('click', () => document.getElementById('clientImageInput').click());
-  document.getElementById('clientImagePreview').addEventListener('click', () => document.getElementById('clientImageInput').click());
-  document.getElementById('clientImageInput').addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      if (file) {
-          compressImage(file, 512, 0.75, (compressedDataUrl) => {
-              document.getElementById('clientImageDataBase64').value = compressedDataUrl;
-              document.getElementById('clientImagePreview').src = compressedDataUrl;
-              showClientImagePreview(true);
-          });
-      }
-  });
-  document.getElementById('clientImageRemoveBtn').addEventListener('click', () => resetClientImagePreview());
-
   // Activity Modal Listeners
   activityForm.addEventListener('submit', handleActivityFormSubmit);
   activityModal.addEventListener('click', (e) => {
@@ -5141,7 +5269,7 @@
   // *** إضافة: ربط النافذة المنبثقة لجميع الدفعات ***
   document.getElementById('allPaymentsModal').addEventListener('click', (e) => {
       if (e.target.dataset.action === 'close-modal' || e.target.classList.contains('modal-backdrop')) {
-          document.getElementById('allPaymentsModal').style.display = 'none';
+          closeModal('allPaymentsModal');
       }
   });
 
@@ -5155,7 +5283,7 @@
   // *** إضافة: ربط النافذة المنبثقة للسجل المالي الكامل ***
   document.getElementById('projectFullFinanceModal').addEventListener('click', (e) => {
       if (e.target.dataset.action === 'close-modal' || e.target.classList.contains('modal-backdrop')) {
-          document.getElementById('projectFullFinanceModal').style.display = 'none';
+          closeModal('projectFullFinanceModal');
       }
   });
 
@@ -5168,8 +5296,8 @@
 
   // AI Analysis Modal Listener
   document.getElementById('aiAnalysisModal').addEventListener('click', (e) => {
-      if (e.target.dataset.action === 'close-modal' || e.target.classList.contains('modal-backdrop')) {
-          document.getElementById('aiAnalysisModal').style.display = 'none';
+      if (e.target.dataset.action === 'close-modal' || e.target.classList.contains('modal-backdrop')) { 
+          closeModal('aiAnalysisModal');
       }
   });
 
@@ -5237,7 +5365,7 @@
           document.getElementById('profileId').value = '';
           document.getElementById('deleteProfileBtn').style.display = 'none';
       }
-      document.getElementById('profileModal').style.display = 'flex';
+      openModal('profileModal');
   }
 
   // Note Modal Listeners
@@ -5564,11 +5692,11 @@
       const form = document.getElementById('apiConfigForm');
       form.reset();
       populateApiModels(); // Populate models for the default provider
-      document.getElementById('apiConfigModal').style.display = 'flex';
+      openModal('apiConfigModal');
   }
 
   function closeApiConfigModal() {
-      document.getElementById('apiConfigModal').style.display = 'none';
+      closeModal('apiConfigModal');
   }
 
   // =================================================================
@@ -5640,7 +5768,7 @@
       const modalBody = document.getElementById('aiAnalysisModalBody');
       const modalTitle = document.getElementById('aiAnalysisModalTitle');
 
-      modal.style.display = 'flex';
+      openModal('aiAnalysisModal');
       modalBody.innerHTML = `<div style="display:flex; justify-content:center; align-items:center; height:100%;"><div class="typing-indicator"><span></span><span></span><span></span></div></div>`;
 
       let itemData, prompt;
@@ -5731,6 +5859,13 @@
                   modalTitle.textContent = `تحليل الملاحظة`;
                   prompt = `بصفتك مساعداً ذكياً، قم بتحليل الملاحظة التالية. لخصها، استخرج أي معلومات مهمة (مثل مقاسات، مهام، أرقام هواتف)، واقترح عنواناً أفضل إن أمكن. الملاحظة: ${JSON.stringify(itemData, null, 2)}.`;
                   break;
+              case 'debt':
+                  const debt = state.debts.find(d => d.id === id);
+                  if (!debt) throw new Error('لم يتم العثور على الدين.');
+                  itemData = { person: debt.person, amount: debt.amount, remaining: debt.remaining, dueDate: debt.dueDate, notes: debt.notes };
+                  modalTitle.textContent = `تحليل دين: ${debt.person}`;
+                  prompt = `بصفتك مستشاراً مالياً، حلل بيانات الدين التالية. قدم ملخصاً للحالة، وقيم مدى خطورة التأخير (إن وجد)، واقترح إجراءً واحداً واضحاً للتعامل مع هذا الدين. البيانات: ${JSON.stringify(itemData, null, 2)}`;
+                  break;
               default:
                   throw new Error('نوع التحليل غير معروف.');
           }
@@ -5748,15 +5883,21 @@
       } catch (error) {
           modalBody.innerHTML = `
               <p style="color: #ef4444;">حدث خطأ أثناء طلب التحليل.</p>
-              <p style="font-size: 13px; color: var(--muted); direction: ltr; text-align: right; white-space: pre-wrap;">${error.message}</p>
-              <button onclick="renderView('api_settings')" class="btn ghost" style="margin-top: 12px;">التحقق من إعدادات الـ API</button>
+              <p style="font-size: 13px; color: var(--muted); direction: ltr; text-align: right; white-space: pre-wrap;">${error.message}</p> 
+              <button onclick="handleApiErrorNavigation()" class="btn ghost" style="margin-top: 12px;">التحقق من إعدادات الـ API</button>
           `;
       }
   }
 
 
-
-
+  /**
+   * *** إضافة: دالة جديدة لمعالجة التنقل عند خطأ الـ API ***
+   * تغلق النافذة المنبثقة الحالية ثم تنتقل إلى صفحة إعدادات الـ API.
+   */
+  function handleApiErrorNavigation() {
+    closeModal('aiAnalysisModal');
+    renderView('api_settings');
+  }
 
 
   async function handleSendAiPrompt() {
@@ -5917,6 +6058,114 @@
       }
   }
   // First-time setup
+  // *** تحسين: دالة لتهيئة جميع معالجات الأحداث مرة واحدة ***
+  function initializeEventListeners() {
+    // Debt Modal Event Listeners
+    document.getElementById('debtForm')?.addEventListener('submit', handleDebtFormSubmit);
+    document.getElementById('debtModal')?.addEventListener('click', (e) => {
+        if (e.target.dataset.action === 'close-modal' || e.target.classList.contains('modal-backdrop')) {
+            closeDebtModal();
+        }
+    });
+    // *** إصلاح: إضافة معالج حدث لزر حذف الدين ***
+    document.getElementById('deleteDebtBtn')?.addEventListener('click', () => {
+        const debtId = parseInt(document.getElementById('debtId').value);
+        if (debtId) {
+            openConfirmModal('هل أنت متأكد من حذف هذا الدين؟', async () => {
+                await db.debts.delete(debtId);
+                closeDebtModal(); // *** إصلاح: إغلاق نافذة تعديل الدين بعد الحذف ***
+                closeConfirmModal();
+                renderView('debts_feature');
+                showToast('تم حذف الدين بنجاح.'); // *** إضافة: إظهار رسالة تأكيد ***
+            });
+        }
+    });
+    
+    document.getElementById('debtPaymentForm')?.addEventListener('submit', handleDebtPaymentFormSubmit);
+    document.getElementById('debtPaymentModal')?.addEventListener('click', (e) => {
+        if (e.target.dataset.action === 'close-modal' || e.target.classList.contains('modal-backdrop')) {
+            closeDebtPaymentModal();
+        }
+    });
+
+    // معالج تبديل الثيم
+    themeToggleHeader.addEventListener('click', toggleTheme);
+
+    // معالج النقر العام على المحتوى الرئيسي (Event Delegation)
+    mainContent.addEventListener('click', (e) => {
+        const target = e.target;
+
+        // بطاقات الوحدات في الصفحة الرئيسية
+        const moduleCard = target.closest('.card[data-key]');
+        if (moduleCard) {
+            renderView(moduleCard.dataset.key, {});
+            return;
+        }
+
+        // أزرار الإضافة والتعديل للنفقات
+        const addExpenseBtn = target.closest('[data-action="add-expense"]');
+        if (addExpenseBtn) {
+            const prefill = addExpenseBtn.dataset.projectId ? { projectId: parseInt(addExpenseBtn.dataset.projectId) } : {};
+            openExpenseModal(null, prefill);
+            return;
+        }
+        const editExpenseBtn = target.closest('[data-action="edit-expense"]');
+        if (editExpenseBtn) {
+            openExpenseModal(parseInt(editExpenseBtn.dataset.id));
+            return;
+        }
+
+        // عرض تفاصيل النفقة
+        const viewExpenseBtn = target.closest('[data-action="view-expense"]');
+        if (viewExpenseBtn) {
+            renderView('expense-details', { id: parseInt(viewExpenseBtn.dataset.id) });
+            return;
+        }
+
+        // أزرار تفاصيل المشروع
+        if (state.currentView.name === 'project-details') {
+            const projectId = state.currentView.params.id;
+            if (target.closest('#backToProjects')) renderView('projects');
+            if (target.closest('#editProjectBtn')) openProjectModal(projectId);
+            if (target.closest('#analyzeProjectBtn')) handleAnalysisRequest('project', projectId);
+            if (target.closest('#addProjectPaymentBtn')) openProjectPaymentModal(null, projectId);
+            if (target.closest('.tab-card')) switchProjectTab(target.closest('.tab-card').dataset.tab);
+            if (target.closest('#showAllFinanceBtn')) openProjectFullFinanceModal(projectId);
+            if (target.closest('#showAllPaymentsBtn')) openAllPaymentsModal(projectId);
+            if (target.closest('#showAllExpensesBtn')) openAllExpensesModal(projectId);
+        }
+
+        // *** إصلاح: إضافة معالجات أزرار واجهة تفاصيل النفقة هنا ***
+        if (state.currentView.name === 'expense-details') {
+            const expenseId = state.currentView.params.id;
+            if (target.closest('[data-action="edit-expense"]')) openExpenseModal(expenseId);
+            if (target.closest('#analyzeExpenseBtn')) handleAnalysisRequest('expense', expenseId);
+            if (target.closest('#printExpenseBtn')) printExpenseReport(expenseId);
+        }
+    });
+
+    // معالجات النماذج (Forms)
+    document.getElementById('projectForm').addEventListener('submit', handleProjectFormSubmit);
+    document.getElementById('projectPaymentForm').addEventListener('submit', handleProjectPaymentFormSubmit);
+    document.getElementById('expenseForm')?.addEventListener('submit', handleExpenseFormSubmit);
+    document.getElementById('profileForm')?.addEventListener('submit', handleProfileFormSubmit);
+    document.getElementById('apiConfigForm')?.addEventListener('submit', handleApiConfigFormSubmit);
+
+    // معالجات النوافذ المنبثقة (Modals)
+    document.getElementById('projectModal')?.addEventListener('click', (e) => {
+        if (e.target.dataset.action === 'close-modal' || e.target.classList.contains('modal-backdrop')) closeProjectModal();
+    });
+    document.getElementById('projectPaymentModal').addEventListener('click', (e) => {
+        if (e.target.dataset.action === 'close-modal' || e.target.classList.contains('modal-backdrop')) closeProjectPaymentModal();
+    });
+    document.getElementById('expenseModal')?.addEventListener('click', (e) => {
+        if (e.target.dataset.action === 'close-modal' || e.target.classList.contains('modal-backdrop')) closeExpenseModal();
+    });
+    document.getElementById('profileModal')?.addEventListener('click', (e) => {
+        if (e.target.dataset.action === 'close-modal' || e.target.classList.contains('modal-backdrop')) closeProfileModal();
+    });
+  }
+
   // *** تحسين: إضافة معالجة أخطاء احترافية لتهيئة التطبيق ***
   async function initializeApp() {
     try {
@@ -5936,6 +6185,9 @@
         
         // عرض الواجهة الرئيسية
         await renderView(state.currentView.name || 'home', state.currentView.params || {});
+        
+        // *** تحسين: تهيئة جميع معالجات الأحداث مرة واحدة فقط ***
+        initializeEventListeners();
 
     } catch (error) {
         console.error("Dexie initialization failed:", error);
