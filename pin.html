@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>إدارة PIN - My Decor Manager</title>
+<!-- Google Fonts: Tajawal -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+<!-- Dexie.js (for IndexedDB) -->
+<script src="https://unpkg.com/dexie@latest/dist/dexie.js"></script>
+
+<style>
+  :root{
+    --primary:#0f766e; /* teal */
+    --accent:#f59e0b;  /* amber */
+    --bg:#f8fafc;
+    --card:#ffffff;
+    --muted:#6b7280;
+    --border-color: rgba(2,6,23,.06);
+    --text-primary: #071331; /* لون النص الأساسي */
+  }
+  body.dark{
+    --bg:#071026;
+    --card:#0b1220;
+    --muted:#9aa6b2;
+    --border-color: rgba(255,255,255,.06);
+    --text-primary: #f1f5f9; /* لون النص الأساسي في الوضع الليلي */
+  }
+  html,body{height:100%}
+  body{
+    margin:0;font-family: 'Tajawal', sans-serif; background:var(--bg); color: var(--text-primary);
+    -webkit-font-smoothing:antialiased; display:flex;flex-direction:column;min-height:100vh;
+  }
+  
+  .app{
+    display:flex;
+    flex-direction:column;
+    flex:1; 
+  }
+
+  header.app-header{
+    display:flex; align-items:center; justify-content:space-between; padding:12px 16px; position:sticky; top:0; z-index:40;
+    background:rgba(255,255,255,.7); backdrop-filter: blur(6px); border-bottom:1px solid rgba(2,6,23,.04)
+  }
+  body.dark header.app-header{background:rgba(255,255,255,.02);border-bottom:1px solid rgba(255,255,255,.04)}
+  .brand{display:flex;gap:12px;align-items:center}
+  .logo{width:46px;height:46px;border-radius:12px;background:linear-gradient(135deg,var(--primary),#0b8f81);display:flex;align-items:center;justify-content:center;color:white;font-weight:900}
+  main{flex:1;overflow:auto;padding:16px;-webkit-overflow-scrolling:touch}
+  
+  .card{
+    background:var(--card); border-radius:12px; padding:16px; display:flex; flex-direction:column;
+    align-items:center; text-align:center; gap:8px; box-shadow:0 10px 30px rgba(2,6,23,.04);
+    cursor:pointer; border: 2px solid transparent;
+  }
+  .card .icon{
+    width:50px; height:50px; border-radius:14px; display:flex; align-items:center;
+    justify-content:center; color:white; font-size:20px; margin-bottom: 4px;
+  }
+
+  .btn{background:var(--primary);color:white;padding:6px 10px;border-radius:8px;font-weight:700; border:none; cursor:pointer; font-size: 13px; white-space: nowrap; display: inline-flex; align-items: center; justify-content: center; gap: 6px;}
+  .btn.icon-btn { width: 40px; height: 40px; border-radius: 50%; padding: 0; font-size: 18px; flex-shrink: 0; }
+  .btn.icon-btn i { margin: 0; }
+  .btn.ghost{background:transparent;border:1px solid rgba(0,0,0,.06);color:var(--primary)}
+
+  /* --- Modal Styles --- */
+  .modal-container {
+    position: fixed; inset: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: center;
+    padding: 16px;
+  }
+  .modal-backdrop {
+    position: absolute; inset: 0;
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(4px);
+    animation: fadeIn .3s ease;
+  }
+  .modal-content {
+    position: relative; z-index: 101;
+    background: var(--card);
+    border-radius: 12px;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    animation: fadeInFromBottom .4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+  }
+  .modal-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-color);
+  }
+  .modal-header h3 { margin: 0; font-size: 18px; }
+  .modal-header .close-btn { background: none; border: none; font-size: 24px; cursor: pointer; color: var(--muted); padding: 0 8px; }
+  .modal-body { padding: 16px; overflow-y: auto; }
+  .form-group { margin-bottom: 16px; }
+  .form-group label { display: block; margin-bottom: 6px; font-weight: 500; font-size: 14px; }
+  .form-group input {
+    width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color);
+    background: var(--bg); color: var(--text-primary); font-size: 15px; box-sizing: border-box;
+  }
+  .form-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+  .modal-container.modal-hidden {
+    display: none;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeInFromBottom {
+    from { opacity: 0; transform: translateY(25px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* --- Toast Notification Styles --- */
+  .toast-container {
+    position: fixed;
+    bottom: 80px; /* Above the nav bar */
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 120;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    pointer-events: none;
+  }
+  .toast {
+    background-color: #22c55e; /* Green for success */
+    color: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    font-weight: 700;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    animation: fadeInFromBottom 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+  .toast.error { background-color: #ef4444; }
+</style>
+</head>
+<body>
+
+    <div class="app" id="app">
+        <!-- Header for mobile view only -->
+        <header class="app-header">
+            <div class="brand">
+                <div class="logo"><i class="fas fa-paint-roller"></i></div>
+                <div>
+                <div style="font-weight:800">My Decor Manager</div>
+                <div style="font-size:13px;color:var(--muted)">إدارة رموز PIN</div>
+                </div>
+            </div>
+            <a href="index.html" class="btn icon-btn ghost" title="العودة للتطبيق الرئيسي">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+        </header>
+
+        <main id="mainContent">
+            <!-- Workers list will be injected here -->
+        </main>
+    </div>
+
+    <!-- Modal for setting/editing PIN -->
+    <div id="pinEditModal" class="modal-container modal-hidden">
+        <div class="modal-backdrop" data-action="close-modal"></div>
+        <div class="modal-content" style="max-width: 380px;">
+            <div class="modal-header">
+                <h3 id="pinEditModalTitle">تعيين رمز PIN</h3>
+                <button class="close-btn" data-action="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="pinEditForm">
+                    <input type="hidden" id="pinEditWorkerId">
+                    <div class="form-group">
+                        <label for="newPin">رمز PIN الجديد (4 أرقام)</label>
+                        <input type="password" id="newPin" required pattern="\d{4}" maxlength="4" placeholder="اتركه فارغاً لإزالة الرمز">
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn">حفظ الرمز</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Container for toast notifications -->
+    <div id="toastContainer" class="toast-container"></div>
+
+<script>
+  // =================================================================
+  // 1. CONFIGURATION & APP STATE
+  // =================================================================
+
+  // --- Database Setup (Dexie.js) ---
+  const db = new Dexie('decorManagerDB');
+  // Define the same schema as in index.html to read the data
+  db.version(22).stores({
+      workers: '++id, name, pin, settlements',
+      projects: '++id, name, status, builderName',
+      suppliers: '++id, name',
+      inventory: '++id, name, borrowerName',
+      debts: '++id, type, dueDate',
+      calendarEvents: '++id, startDate, endDate',
+      expenses: '++id, date, projectId, workerId, supplierId, category, paymentStatus',
+      projectPayments: '++id, projectId, date',
+      api_configs: '++id, name, provider',
+      companyProfiles: '++id, profileName', 
+      notes: '++id, updatedAt',
+      app_settings: 'key'
+  });
+
+  let state = {
+    workers: [],
+  };
+
+  // =================================================================
+  // 2. DOM Elements
+  // =================================================================
+  const mainContent = document.getElementById('mainContent');
+  const pinEditModal = document.getElementById('pinEditModal');
+  const pinEditForm = document.getElementById('pinEditForm');
+
+  // =================================================================
+  // 3. CORE FUNCTIONS
+  // =================================================================
+
+  function showToast(message, type = 'success') {
+      const container = document.getElementById('toastContainer');
+      if (!container) return;
+
+      const toast = document.createElement('div');
+      toast.className = `toast ${type === 'error' ? 'error' : ''}`;
+      toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i> ${message}`;
+      
+      container.appendChild(toast);
+
+      setTimeout(() => { toast.remove(); }, 3000);
+  }
+
+  function openModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.classList.remove('modal-hidden');
+    }
+  }
+
+  function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.classList.add('modal-hidden');
+    }
+  }
+
+  async function renderWorkersList() {
+    try {
+        state.workers = await db.workers.toArray();
+    } catch (error) {
+        console.error("Failed to load workers:", error);
+        mainContent.innerHTML = `<p style="color: #ef4444; text-align: center;">حدث خطأ أثناء تحميل قائمة العمال.</p>`;
+        return;
+    }
+
+    const workersListHTML = state.workers && state.workers.length > 0
+        ? state.workers.map(worker => {
+            const hasPin = worker.pin && worker.pin.length > 0;
+            return `
+            <div class="card" style="flex-direction: row; justify-content: space-between; align-items: center; text-align: right; margin-bottom: 12px; padding: 12px 16px; cursor: default; transform: none;">
+                <div style="display:flex; align-items:center; gap: 12px;">
+                    <div class="icon" style="width:48px; height:48px; background: linear-gradient(135deg,#f97316,#f59e0b); font-size: 20px; margin-bottom: 0;">
+                        <i class="fas ${hasPin ? 'fa-lock' : 'fa-user'}"></i>
+                    </div>
+                    <div>
+                        <div style="font-weight: 700;">${worker.name}</div>
+                        <div style="font-size: 13px; color: var(--muted);">${hasPin ? 'معين له رمز PIN' : 'بدون رمز PIN'}</div>
+                    </div>
+                </div>
+                <!-- *** تعديل: زر ديناميكي للمسح أو التعيين *** -->
+                <button class="btn" 
+                        data-action="${hasPin ? 'clear' : 'set'}" 
+                        data-id="${worker.id}" 
+                        style="background-color: ${hasPin ? '#ef4444' : '#10b981'};">
+                    <i class="fas ${hasPin ? 'fa-trash-alt' : 'fa-key'}" style="margin-left: 6px;"></i> 
+                    ${hasPin ? 'مسح PIN' : 'تعيين PIN'}
+                </button>
+            </div>
+        `}).join('')
+        : `<p style="text-align:center; color:var(--muted); padding: 20px;">لم يتم إضافة أي عمال بعد. <a href="index.html">أضف عاملاً</a></p>`;
+
+    mainContent.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px; gap: 12px;">
+            <h3 style="margin:0; font-weight:800; text-align: right; flex-grow: 1;">إدارة رموز PIN للعمال</h3>
+        </div>
+        ${workersListHTML}
+    `;
+
+    // *** تعديل: استخدام Event Delegation لمعالجة نقرات الأزرار (يتم ربطه مرة واحدة فقط) ***
+    mainContent.removeEventListener('click', handlePinButtonClick); // إزالة المستمع القديم لتجنب التكرار
+    mainContent.addEventListener('click', handlePinButtonClick);
+  }
+
+  // *** تعديل: دالة موحدة لمعالجة أزرار PIN ***
+  async function handlePinButtonClick(e) {
+    const button = e.target.closest('button[data-action]');
+    if (!button) return;
+
+    const action = button.dataset.action;
+    const workerId = parseInt(button.dataset.id);
+
+    if (action === 'set') {
+        // إذا كان العامل لا يملك PIN، افتح نافذة التعيين
+        openPinEditModal(workerId);
+    } else if (action === 'clear') {
+        // إذا كان العامل يملك PIN، اطلب تأكيد المسح قبل الحذف
+        openConfirmModal('هل أنت متأكد من مسح رمز PIN لهذا العامل؟', async () => {
+            try {
+                // الخطوة 1: مسح الـ PIN من قاعدة البيانات (IndexedDB) بجعل قيمته null
+                await db.workers.update(workerId, { pin: null });
+
+                // الخطوة 2: مسح الـ PIN المحفوظ في localStorage إذا كان يخص هذا العامل
+                const rememberedPinData = JSON.parse(localStorage.getItem('rememberedPin'));
+                if (rememberedPinData && rememberedPinData.workerId === workerId) {
+                    localStorage.removeItem('rememberedPin');
+                }
+
+                showToast('تم مسح رمز PIN بنجاح.');
+                closeConfirmModal(); // إغلاق نافذة التأكيد
+                await renderWorkersList(); // تحديث الواجهة لإظهار التغيير
+            } catch (error) {
+                console.error("Failed to clear PIN:", error);
+                showToast('فشل مسح رمز PIN.', 'error');
+                closeConfirmModal();
+            }
+        });
+    }
+  }
+
+  function openPinEditModal(workerId) {
+    const worker = state.workers.find(w => w.id === workerId);
+    if (!worker) {
+        showToast('لم يتم العثور على العامل!', 'error');
+        return;
+    }
+
+    pinEditForm.reset();
+    document.getElementById('pinEditWorkerId').value = workerId;
+    document.getElementById('newPin').value = worker.pin || '';
+    document.getElementById('pinEditModalTitle').textContent = `تعديل PIN للعامل: ${worker.name}`;
+    
+    openModal('pinEditModal');
+  }
+
+  async function handlePinEditFormSubmit(e) {
+    e.preventDefault();
+    const workerId = parseInt(document.getElementById('pinEditWorkerId').value);
+    const newPin = document.getElementById('newPin').value;
+
+    // Validate PIN: must be 4 digits or empty
+    if (newPin && !/^\d{4}$/.test(newPin)) {
+        showToast('رمز PIN يجب أن يتكون من 4 أرقام بالضبط.', 'error');
+        return;
+    }
+
+    try {
+        await db.workers.update(workerId, { pin: newPin || null });
+        showToast('تم تحديث رمز PIN بنجاح!');
+        closeModal('pinEditModal');
+        await renderWorkersList(); // Re-render the list to show changes
+    } catch (error) {
+        console.error("Failed to update PIN:", error);
+        showToast('فشل تحديث رمز PIN.', 'error');
+    }
+  }
+
+  // *** إضافة: نافذة تأكيد عامة (يمكن نقلها إلى ملف مشترك لاحقاً) ***
+  let onConfirmCallback = null;
+  function openConfirmModal(message, onConfirm) {
+    onConfirmCallback = onConfirm;
+    // Create modal if it doesn't exist
+    if (!document.getElementById('confirmModal')) {
+        document.body.insertAdjacentHTML('beforeend', `
+            <div id="confirmModal" class="modal-container modal-hidden" style="z-index: 110;">
+                <div class="modal-backdrop" data-action="close-modal"></div>
+                <div class="modal-content" style="max-width: 380px;">
+                    <div class="modal-header"><h3 id="confirmModalTitle">تأكيد الإجراء</h3><button class="close-btn" data-action="close-modal">&times;</button></div>
+                    <div class="modal-body" style="text-align: center;">
+                        <div style="font-size: 48px; color: #f59e0b; margin-bottom: 16px;"><i class="fas fa-exclamation-triangle"></i></div>
+                        <p id="confirmModalMessage" style="margin-top:0; margin-bottom: 20px; font-size: 15px; line-height: 1.6;"></p>
+                        <div class="form-actions" style="justify-content: center;">
+                            <button type="button" class="btn" id="confirmModalCancelBtn" style="background-color: var(--muted);">إلغاء</button>
+                            <button type="button" class="btn" id="confirmModalConfirmBtn" style="background-color: #ef4444;">نعم، تأكيد</button>
+                        </div>
+                    </div>
+                </div>
+            </div>`);
+        document.getElementById('confirmModalConfirmBtn').addEventListener('click', () => { if (onConfirmCallback) onConfirmCallback(); });
+        document.getElementById('confirmModalCancelBtn').addEventListener('click', closeConfirmModal);
+        document.getElementById('confirmModal').addEventListener('click', (e) => { if (e.target.dataset.action === 'close-modal' || e.target.classList.contains('modal-backdrop')) closeConfirmModal(); });
+    }
+    document.getElementById('confirmModalMessage').innerHTML = message;
+    openModal('confirmModal');
+  }
+  function closeConfirmModal() {
+    closeModal('confirmModal');
+    onConfirmCallback = null;
+  }
+
+  // =================================================================
+  // 4. EVENT LISTENERS & INITIALIZATION
+  // =================================================================
+
+  async function initializeApp() {
+    try {
+        await db.open();
+        console.log("Database opened successfully on pin.html");
+        await renderWorkersList();
+    } catch (error) {
+        console.error("Initialization failed on pin.html:", error);
+        mainContent.innerHTML = `<p style="color: #ef4444; text-align: center;">فشل تهيئة الصفحة. تأكد من أن قاعدة البيانات موجودة.</p>`;
+    }
+  }
+
+  // Modal Listeners
+  pinEditModal.addEventListener('click', (e) => {
+      if (e.target.dataset.action === 'close-modal' || e.target.classList.contains('modal-backdrop')) {
+          closeModal('pinEditModal');
+      }
+  });
+  pinEditForm.addEventListener('submit', handlePinEditFormSubmit);
+
+  // Initial Load
+  window.addEventListener('load', initializeApp);
+
+</script>
+</body>
+</html>
