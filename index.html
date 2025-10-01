@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -123,9 +124,28 @@
   .nav-item {
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     gap: 4px; color: var(--muted); cursor: pointer; font-size: 12px; font-weight: 500;
-    flex: 1; height: 100%;
+    flex: 1; height: 100%; position: relative; /* *** إضافة: لجعل نقطة الإشعار مرتبطة بالعنصر *** */
   }
   .nav-brand { display: none; } /* Hide brand logo in nav on mobile */
+  /* *** إضافة: تنسيق نقطة الإشعار *** */
+  /* *** تعديل: إصلاح موضع نقطة الإشعار *** */
+  .notification-dot {
+    position: absolute;
+    top: 8px;
+    right: 25%;
+    width: 10px;
+    height: 10px;
+    background-color: #ef4444;
+    border-radius: 50%;
+    border: 2px solid var(--card);
+    display: none; /* Hidden by default */
+  }
+  /* *** إضافة: حركة اهتزاز للزر المهم *** */
+  @keyframes pulse-animation {
+    0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7); }
+    70% { transform: scale(1.02); box-shadow: 0 0 0 10px rgba(245, 158, 11, 0); }
+    100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+  }
   
   .nav-item:hover { color: var(--primary); }
   .nav-item.active { color: var(--primary); font-weight: 700; }
@@ -190,6 +210,10 @@
     .nav-item.active { background-color: rgba(15, 118, 110, 0.1); }
     
     .app {
+        /* *** إضافة: تنسيق نقطة الإشعار لنسخة الحاسوب *** */
+        .notification-dot {
+            top: 8px; right: 8px;
+        }
         padding-bottom: 0;
         max-width: none;
         flex-grow: 1;
@@ -542,6 +566,30 @@
   @media (max-width: 480px) {
     .professional-table .hide-on-mobile { display: none; }
   }
+  /* *** إضافة: تنسيقات القائمة المنسدلة للمستخدم *** */
+  .user-profile-dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    background-color: var(--card);
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    border: 1px solid var(--border-color);
+    width: 240px;
+    z-index: 50;
+    padding: 8px;
+    animation: fadeInFromBottom 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+  .user-profile-dropdown .user-info {
+    padding: 8px 12px;
+    margin-bottom: 8px;
+    border-bottom: 1px solid var(--border-color);
+  }
+  .user-profile-dropdown .user-info div {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 </style>
 </head>
 <body>
@@ -587,6 +635,7 @@
         <div class="nav-item" data-view="settings">
             <i class="fas fa-cog"></i>
             <span>الاعدادات</span>
+            <span class="notification-dot" id="settingsNotificationDot"></span>
         </div>
     </nav>
     
@@ -601,8 +650,27 @@
                 <div style="font-size:13px;color:var(--muted)">مدير الديكور الخاص بك</div>
                 </div>
             </div>
-            <div style="display:flex;gap:8px;align-items:center">
-                <button id="logoutBtn" class="btn icon-btn ghost" title="تسجيل الخروج" style="color: #ef4444; border-color: transparent;"><i class="fas fa-sign-out-alt"></i></button>
+            <div style="display:flex;gap:8px;align-items:center; position: relative;">
+                <button id="userProfileBtn" class="btn icon-btn ghost" title="الحساب">
+                    <i id="userProfileIcon" class="fas fa-sign-in-alt"></i>
+                </button>
+                <div id="userProfileDropdown" class="user-profile-dropdown" style="display: none;">
+                    <!-- Logged In View -->
+                    <div id="loggedInView" style="display: none;">
+                        <div class="user-info">
+                        <div id="userDisplayName" style="font-weight: 700;">جاري التحميل...</div>
+                        <div id="userDisplayEmail" style="font-size: 13px; color: var(--muted);"></div>
+                        </div>
+                        <button id="logoutBtn" class="btn ghost" style="width: 100%; justify-content: flex-start; color: #ef4444; border-color: transparent; text-align: right;">
+                            <i class="fas fa-sign-out-alt" style="margin-left: 8px;"></i> تسجيل الخروج
+                        </button>
+                    </div>
+                    <!-- Logged Out View -->
+                    <div id="loggedOutView" style="display: none; display: flex; flex-direction: column; gap: 8px;">
+                        <a href="login.html" class="btn" style="text-decoration: none;"><i class="fas fa-sign-in-alt" style="margin-left: 8px;"></i> تسجيل الدخول</a>
+                        <a href="signup.html" class="btn ghost" style="text-decoration: none;">إنشاء حساب جديد</a>
+                    </div>
+                </div>
                 <button id="themeToggleHeader" class="btn icon-btn ghost" title="تبديل الوضع"><i class="fas fa-moon"></i></button>
             </div>
         </header>
@@ -671,12 +739,13 @@
 
   <!-- Modal for adding/editing workers -->
   <div id="workerModal" class="modal-container modal-hidden">
-      <div class="modal-backdrop"></div>
+      <div class="modal-backdrop" data-action="close-modal"></div>
       <div class="modal-content">
           <div class="modal-header">
               <h3 id="workerModalTitle">إضافة عامل جديد</h3>
               <button class="close-btn" data-action="close-modal">&times;</button>
           </div>
+          <!-- ملاحظة: تخزين PIN محلياً ليس آمناً 100% للبيئات الإنتاجية الحساسة. -->
           <div class="modal-body">
               <form id="workerForm">
                   <input type="hidden" id="workerId">
@@ -705,6 +774,10 @@
                       <label for="workerDailyRate">الأجرة اليومية الافتراضية (د.ج)</label>
                       <input type="number" id="workerDailyRate" required>
                   </div>
+                  <div class="form-group">
+                      <label for="workerPin">رمز PIN (اختياري - 4 أرقام)</label>
+                      <input type="password" id="workerPin" pattern="\d{4}" maxlength="4" placeholder="اتركه فارغاً لعدم تعيين رمز">
+                  </div>
                   <div class="form-actions">
                       <button type="submit" class="btn">حفظ</button>
                       <button type="button" class="btn" id="deleteWorkerBtn" style="display: none; background-color: #ef4444;">حذف</button>
@@ -713,6 +786,37 @@
           </div>
       </div>
   </div>
+
+  <!-- *** إضافة: نافذة منبثقة لإدخال PIN العامل *** -->
+  <div id="workerPinModal" class="modal-container modal-hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content" style="max-width: 360px;">
+        <div class="modal-header">
+            <h3>التحقق من الهوية</h3>
+            <button class="close-btn" data-action="close-modal">&times;</button>
+        </div>
+        <div class="modal-body" style="text-align: center;">
+            <p style="margin-top:0; margin-bottom: 20px;">الرجاء إدخال رمز PIN الخاص بالعامل <strong id="pinWorkerName"></strong> للمتابعة.</p>
+            <form id="workerPinForm">
+                <input type="hidden" id="pinWorkerId">
+                <div class="form-group">
+                    <input type="password" id="pinInput" required pattern="\d{4}" maxlength="4" style="text-align: center; font-size: 24px; letter-spacing: 10px;">
+                </div>
+                <div class="form-actions" style="justify-content: center;">
+                    <button type="submit" class="btn" style="flex: 1;">دخول</button>
+                </div>
+                <!-- *** إضافة: خيار تذكر PIN *** -->
+                <div class="form-group" style="text-align: right; margin-top: 15px; margin-bottom: 0;">
+                    <label style="display: inline-flex; align-items: center; cursor: pointer; font-size: 14px; color: var(--muted);">
+                        <input type="checkbox" id="rememberPinCheckbox" style="width: auto; margin-left: 8px; transform: scale(1.1);">
+                        تذكر رمز PIN على هذا الجهاز
+                    </label>
+                    <!-- ملاحظة أمنية: حفظ PIN في localStorage مناسب للراحة فقط وليس للبيئات عالية الأمان. -->
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
   <!-- Modal for adding attendance/payment -->
   <div id="activityModal" class="modal-container modal-hidden">
@@ -1064,6 +1168,45 @@
   <!-- Container for toast notifications -->
   <div id="toastContainer" class="toast-container"></div>
 
+  <!-- *** إضافة: نافذة منبثقة لإدارة رموز PIN (مدمجة من pin.html) *** -->
+  <div id="pinManagementModal" class="modal-container modal-hidden">
+      <div class="modal-backdrop" data-action="close-modal"></div>
+      <div class="modal-content" style="max-width: 600px;">
+          <div class="modal-header">
+              <h3>إدارة رموز PIN للعمال</h3>
+              <button class="close-btn" data-action="close-modal">&times;</button>
+          </div>
+          <div class="modal-body" id="pinManagementContent">
+              <!-- Worker list for PIN management will be injected here -->
+          </div>
+      </div>
+  </div>
+
+  <!-- *** إضافة: نافذة منبثقة لتعيين/تعديل PIN (مدمجة من pin.html) *** -->
+  <div id="pinEditModal" class="modal-container modal-hidden" style="z-index: 105;">
+      <div class="modal-backdrop" data-action="close-modal"></div>
+      <div class="modal-content" style="max-width: 380px;">
+          <div class="modal-header">
+              <h3 id="pinEditModalTitle">تعيين رمز PIN</h3>
+              <button class="close-btn" data-action="close-modal">&times;</button>
+          </div>
+          <div class="modal-body">
+              <form id="pinEditForm">
+                  <input type="hidden" id="pinEditWorkerId">
+                  <div class="form-group">
+                      <label for="newPin">رمز PIN الجديد (4 أرقام)</label>
+                      <input type="password" id="newPin" required pattern="\d{4}" maxlength="4" placeholder="اتركه فارغاً لإزالة الرمز">
+                  </div>
+                  <div class="form-actions">
+                      <button type="submit" class="btn">حفظ الرمز</button>
+                  </div>
+              </form>
+          </div>
+      </div>
+  </div>
+
+
+
 <script>
   // =================================================================
   // 1. CONFIGURATION & APP STATE
@@ -1086,14 +1229,17 @@
 
   // --- Database Setup (Dexie.js) ---
   const db = new Dexie('decorManagerDB');
-  // *** إضافة: جدول جديد للديون ورفع إصدار قاعدة البيانات ***
-  db.version(21).stores({
-      workers: '++id, name, settlements',
+  // *** إصلاح: توحيد إصدار قاعدة البيانات إلى 23 وتصحيح مخطط جدول المشتريات ***
+  // This version must match the worker app's version to avoid schema errors if they ever share a DB.
+    db.version(24).stores({
+      workers: '++id, name, pin, settlements',
       projects: '++id, name, status, builderName',
       suppliers: '++id, name',
       inventory: '++id, name, borrowerName',
       debts: '++id, type, dueDate', // جدول الديون الجديد
       calendarEvents: '++id, startDate, endDate',
+      // *** إصلاح: تصحيح مخطط المشتريات ليشمل جميع الحقول ويستخدم firestoreId كمفتاح أساسي ***
+      purchases: 'firestoreId, workerId, status, date',
       expenses: '++id, date, projectId, workerId, supplierId, category, paymentStatus',
       projectPayments: '++id, projectId, date',
       api_configs: '++id, name, provider', // New table for AI API configurations, added provider index
@@ -1101,10 +1247,22 @@
       notes: '++id, updatedAt',
       app_settings: 'key' // A simple key-value store for things like theme
   }).upgrade(tx => { 
+      // This upgrade function will run if the user's DB version is less than 24.
   });
 
   // *** إضافة: متغير لتتبع حالة فتح قاعدة البيانات ***
   let isDbOpen = false;
+
+  // *** تعديل: استخدام معرّف جهاز دائم بدلاً من معرّف جلسة مؤقت ***
+  function getOrCreateDeviceId() {
+    let deviceId = localStorage.getItem('appDeviceId');
+    if (!deviceId) {
+        deviceId = `device_${Date.now()}_${Math.random()}`;
+        localStorage.setItem('appDeviceId', deviceId);
+    }
+    return deviceId;
+  }
+  const deviceIdentifier = getOrCreateDeviceId();
 
   // حالة التطبيق (البيانات)
   let state = {
@@ -1117,6 +1275,7 @@
     inventory: [],
     debts: [], // *** إضافة: حالة لتخزين الديون ***
     projectPayments: [],
+      purchases: [], // *** إضافة: حالة لتخزين المشتريات للمراجعة ***
     calendarEvents: [],
     companyProfiles: [],
     api_configs: []
@@ -1188,7 +1347,8 @@
     },
     { key: 'calendar', title: 'الجدول الزمني', description: 'تنظيم مواعيد المشاريع والمهام', icon: 'fa-calendar-alt', color: 'linear-gradient(135deg,#ec4899,#d946ef)' },    
     { key: 'debts_feature', title: 'سجل الديون', description: 'تتبع ديونك وديون الآخرين', icon: 'fa-book-reader', color: 'linear-gradient(135deg,#8b5cf6,#7c3aed)' },
-    { key: 'notes', title: 'ملاحظات سريعة', description: 'لتسجيل الأفكار والمقاسات', icon: 'fa-sticky-note', color: 'linear-gradient(135deg,#3b82f6,#2563eb)' }
+    { key: 'notes', title: 'ملاحظات سريعة', description: 'لتسجيل الأفكار والمقاسات', icon: 'fa-sticky-note', color: 'linear-gradient(135deg,#3b82f6,#2563eb)' },
+    { key: 'purchases', title: 'سجل المشتريات', description: 'تتبع وإدارة جميع المشتريات', icon: 'fa-shopping-cart', color: 'linear-gradient(135deg,#8b5cf6,#6366f1)' }
   ];
 
   const themes = {
@@ -1212,7 +1372,6 @@
   const app = document.getElementById('app');
   const themeToggleHeader = document.getElementById('themeToggleHeader');
   const mainContent = document.getElementById('mainContent');
-  const logoutBtn = document.getElementById('logoutBtn');
   const mainNav = document.getElementById('mainNav');
   
   // =================================================================
@@ -1237,6 +1396,7 @@
       state.inventory = await db.inventory.toArray();
       state.debts = await db.debts.toArray();
       state.calendarEvents = await db.calendarEvents.toArray();
+      state.purchases = await db.purchases.toArray();
       state.expenses = await db.expenses.toArray();
       state.companyProfiles = await db.companyProfiles.toArray();
       state.api_configs = await db.api_configs.toArray();
@@ -1303,6 +1463,7 @@
         state.inventory = await db.inventory.toArray();
         state.debts = await db.debts.toArray();
         state.calendarEvents = await db.calendarEvents.toArray();
+      state.purchases = await db.purchases.toArray();
         state.expenses = await db.expenses.toArray();
         state.companyProfiles = await db.companyProfiles.toArray();
         state.api_configs = await db.api_configs.toArray();
@@ -1342,6 +1503,7 @@
             case 'about':         content = getAboutView(); break;
             case 'supplier-details': content = getSupplierDetailsView(params.id); break;
             case 'debt-details':  content = getDebtDetailsView(params.id); break; // *** إضافة: واجهة تفاصيل الدين ***
+            case 'purchases':     content = getPurchasesView(); break; // *** إضافة: واجهة سجل المشتريات ***
             case 'inventory-details': content = getInventoryItemDetailsView(params.id); break;
             default:              content = `<h3>View Not Found: ${viewName}</h3>`;
         } 
@@ -1353,24 +1515,47 @@
             document.getElementById('navigateToThemes')?.addEventListener('click', () => renderView('themes'));
             document.getElementById('navigateToFactoryReset')?.addEventListener('click', () => renderView('factory_reset'));
             document.getElementById('navigateToBackupRestore')?.addEventListener('click', () => renderView('backup_restore'));
+            // *** إضافة: إظهار/إخفاء نقطة الإشعار على بطاقة النسخ الاحتياطي ***
+            // *** تعديل: ربط زر إدارة PIN لفتح النافذة المنبثقة ***
+            document.getElementById('managePinsBtn')?.addEventListener('click', openPinManagementModal);
+            const backupCardDot = document.getElementById('backupRestoreCardDot');
+            if (backupCardDot) {
+                backupCardDot.style.display = document.getElementById('settingsNotificationDot').style.display;
+            }
         }
         if (viewName === 'backup_restore') {
             // After rendering the backup view, fetch the last backup date
             const user = auth.currentUser;
             if (user) {
+
                 firestore.collection('backups').doc(user.uid).get().then(doc => {
                     const infoEl = document.getElementById('lastBackupInfo');
                     const restoreBtn = document.getElementById('restoreBtn');
                     if (doc.exists && infoEl) {
-                        const timestamp = doc.data().backupTimestamp;
-                        const date = timestamp ? timestamp.toDate() : null;
-                        infoEl.textContent = `آخر نسخة احتياطية: ${date ? date.toLocaleString('ar-DZ') : 'غير معروف'}`;
-                        if(restoreBtn) restoreBtn.disabled = false;
+                        const backupData = doc.data();
+                        const timestamp = backupData.backupTimestamp;
+                        const date = timestamp ? timestamp.toDate().toLocaleString('ar-DZ') : 'غير معروف';
+                        infoEl.textContent = `آخر نسخة احتياطية: ${date}`;
+                        if (restoreBtn) restoreBtn.disabled = false;
+
+                        // *** إضافة: تفعيل المظهر الاحترافي لزر الاستعادة إذا كان هناك تحديث ***
+                        // *** تعديل: إضافة شرط للتحقق من أن التحديث من جهاز آخر ***
+                        const backupTime = timestamp ? timestamp.toDate().getTime() : 0;
+                        const lastSyncTime = parseInt(localStorage.getItem('lastBackupSyncTime') || '0');
+                        const isFromAnotherDevice = backupData.lastUpdatedBy && backupData.lastUpdatedBy !== deviceIdentifier;
+                        if (backupTime > lastSyncTime && isFromAnotherDevice) {
+                            infoEl.innerHTML = `✨ تحديث جديد متوفر من جهاز آخر! <br><small>آخر نسخة احتياطية: ${date}</small>`;
+                            restoreBtn.style.animation = 'pulse-animation 2s infinite';
+                        }
                     } else if (infoEl) {
                         infoEl.textContent = 'لم يتم العثور على نسخة احتياطية في السحابة.';
                     }
                 });
             }
+            // *** إضافة: عند زيارة الصفحة، نعتبر أن المستخدم رأى الإشعار ***
+            hideBackupNotification();
+            // حفظ آخر وقت تمت فيه المزامنة (حتى لو لم يضغط استعادة)
+            localStorage.setItem('lastBackupSyncTime', Date.now());
         }
         if (viewName === 'api_settings') {
             document.getElementById('addApiConfigBtn')?.addEventListener('click', () => openApiConfigModal());
@@ -1378,7 +1563,32 @@
         }
         if (viewName === 'workers') {
             document.getElementById('addWorkerBtn')?.addEventListener('click', () => openWorkerModal());
-            mainContent.querySelectorAll('[data-action="view-worker"]').forEach(card => card.addEventListener('click', (e) => renderView('worker-details', { id: parseInt(e.currentTarget.dataset.id) })));
+            mainContent.querySelectorAll('[data-action="view-worker"]').forEach(card => card.addEventListener('click', async (e) => {
+                // *** تعديل: منطق التحقق من PIN المحفوظ ***
+                const workerId = parseInt(e.currentTarget.dataset.id);
+                const worker = await db.workers.get(workerId);
+
+                // 1. إذا كان العامل لديه PIN
+                if (worker && worker.pin) {
+                    // 2. تحقق من localStorage
+                    const rememberedPinData = JSON.parse(localStorage.getItem('rememberedPin'));
+                    // 3. إذا كان الـ PIN المحفوظ يطابق العامل الحالي
+                    if (rememberedPinData && rememberedPinData.workerId === workerId && rememberedPinData.pin === worker.pin) {
+                        // الدخول مباشرة
+                        renderView('worker-details', { id: workerId });
+                    } else {
+                        // إظهار نافذة إدخال PIN
+                        openWorkerPinModal(workerId);
+                    }
+                } else {
+                    // No PIN, go directly to details
+                    renderView('worker-details', { id: workerId });
+                }
+            }));
+        }
+        if (viewName === 'pin_management') {
+            document.getElementById('addWorkerBtn')?.addEventListener('click', () => openWorkerModal());
+            mainContent.querySelectorAll('[data-action="edit-pin"]').forEach(btn => btn.addEventListener('click', (e) => openPinEditModal(parseInt(e.currentTarget.dataset.id))));
         }
         if (viewName === 'projects') {
             document.getElementById('addProjectBtn')?.addEventListener('click', () => openProjectModal());
@@ -2768,10 +2978,25 @@
         <!-- *** إضافة: بطاقة النسخ الاحتياطي والاستعادة *** -->
         <div id="navigateToBackupRestore" class="card" style="align-items:flex-start; text-align:right; flex-direction: row; justify-content: space-between; margin-top: 12px;">
             <div style="display:flex; align-items:center; gap: 12px;">
-                <div class="icon" style="width:48px; height:48px; background: linear-gradient(135deg,#3b82f6,#2563eb); font-size: 20px; margin-bottom: 0;"><i class="fas fa-database"></i></div>
+                <div class="icon" style="width:48px; height:48px; background: linear-gradient(135deg,#3b82f6,#2563eb); font-size: 20px; margin-bottom: 0; position: relative;">
+                    <i class="fas fa-database"></i>
+                    <span class="notification-dot" id="backupRestoreCardDot" style="top: -2px; right: -2px;"></span>
+                </div>
                 <div>
                     <div style="font-weight:700;">النسخ الاحتياطي والاستعادة</div>
                     <div style="font-size:13px; color: var(--muted)">حفظ نسخة من بياناتك أو استعادتها</div>
+                </div>
+            </div>
+            <i class="fas fa-chevron-left" style="color: var(--muted); align-self: center;"></i>
+        </div>
+
+        <!-- *** تعديل: تحويل الرابط إلى زر يفتح نافذة منبثقة *** -->
+        <div id="managePinsBtn" class="card" style="align-items:flex-start; text-align:right; flex-direction: row; justify-content: space-between; margin-top: 12px;">
+            <div style="display:flex; align-items:center; gap: 12px;">
+                <div class="icon" style="width:48px; height:48px; background: linear-gradient(135deg,#f97316,#f59e0b); font-size: 20px; margin-bottom: 0;"><i class="fas fa-key"></i></div>
+                <div>
+                    <div style="font-weight:700;">إدارة رموز PIN للعمال</div>
+                    <div style="font-size:13px; color: var(--muted)">تعيين أو مسح رموز الدخول للعمال</div>
                 </div>
             </div>
             <i class="fas fa-chevron-left" style="color: var(--muted); align-self: center;"></i>
@@ -2951,6 +3176,83 @@
   `;
   }
 
+  // *** إضافة: واجهة مبدئية لسجل المشتريات ***
+  function getPurchasesView() { 
+        // Defensive dedupe
+        const seen = new Set();
+        const clean = (Array.isArray(state.purchases) ? state.purchases : []).filter(p => {
+            const key = p && (p.firestoreId || p.id || `${p.description}-${p.amount}-${p.date}`);
+            if (seen.has(key)) return false;
+            seen.add(key);
+            return true;
+        });
+
+        const pendingPurchases = clean.filter(p => p.status === 'pending').sort((a, b) => {
+            const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(0);
+            const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(0);
+            return dateB - dateA;
+        });
+
+    const purchasesListHTML = pendingPurchases.length > 0 ? pendingPurchases.map(purchase => `
+        <div class="card" style="flex-direction: column; align-items: stretch; text-align: right; margin-bottom: 12px; padding: 16px; cursor: default; transform: none;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                <div>
+                    <div style="font-weight: 700;">${purchase.description}</div>
+                    <div style="font-size: 13px; color: var(--muted); margin-top: 4px;">
+                        <i class="fas fa-user" style="margin-left: 4px;"></i> ${purchase.workerName || 'عامل غير معروف'}
+                    </div>
+                </div>
+                <div style="font-weight: 800; font-size: 16px; color: #ef4444; flex-shrink: 0;">${purchase.amount.toLocaleString()} د.ج</div>
+            </div>
+            ${purchase.notes ? `<div style="background: var(--bg); padding: 8px 12px; border-radius: 8px; font-size: 14px; margin-bottom: 16px; white-space: pre-wrap;">${purchase.notes}</div>` : ''}
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button class="btn ghost" onclick="handlePurchaseReview('${purchase.firestoreId}', 'rejected')" style="color: #ef4444; border-color: #ef4444;">رفض</button>
+                <button class="btn" onclick="handlePurchaseReview('${purchase.firestoreId}', 'approved')" style="background-color: #10b981;">تأكيد وإضافة كنفقة</button>
+            </div>
+        </div>
+    `).join('') : `
+        <div class="card" style="cursor:default; transform:none; padding: 40px 20px; align-items: center; text-align: center;">
+            <div style="font-size: 40px; color: var(--primary); margin-bottom: 16px;"><i class="fas fa-check-circle"></i></div>
+            <h3 style="margin:0 0 8px;">لا توجد مشتريات للمراجعة</h3>
+            <p style="color:var(--muted); margin:0;">كل شيء محدّث!</p>
+        </div>
+    `;
+
+    return `
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px; gap: 12px;">
+            <button onclick="renderView('more_features')" class="btn icon-btn" title="العودة"><i class="fas fa-arrow-right"></i></button>
+            <h3 style="margin:0; font-weight:800; text-align: right; flex-grow: 1;">مراجعة المشتريات</h3>
+        </div>
+        ${purchasesListHTML}
+    `;
+  }
+
+  async function handlePurchaseReview(firestoreId, newStatus) {
+      try {
+          if (!firestoreId) {
+              throw new Error("Purchase ID is missing.");
+          }
+          const purchaseRef = firestore.collection('purchases').doc(firestoreId);
+          await purchaseRef.update({ status: newStatus });
+
+          if (newStatus === 'approved') {
+              const purchase = state.purchases.find(p => p.firestoreId === firestoreId);
+              await db.expenses.add({ ...purchase, paymentStatus: 'paid' });
+              showToast('تم تأكيد الشراء وإضافته للنفقات.');
+          } else {
+              showToast('تم رفض طلب الشراء.');
+          }
+          // *** إصلاح: لا تقم بحذف السجل من Dexie. فقط قم بإزالته من الحالة المؤقتة لإخفائه من الواجهة. ***
+          // سيقوم مستمع Firestore في تطبيق العامل بالتقاط تغيير الحالة (approved/rejected) وتحديث واجهته.
+          state.purchases = state.purchases.filter(p => p.firestoreId !== firestoreId);
+          // إعادة رسم الواجهة لإظهار التغيير فوراً في تطبيق المدير.
+          await renderView('purchases');
+      } catch (error) {
+          console.error("Error reviewing purchase:", error);
+          showCustomToast('حدث خطأ أثناء مراجعة الطلب.', 'error');
+      }
+  }
+
   function getApiSettingsView() {
     const activeApiId = state.active_api_id;
     const apiListHTML = state.api_configs && state.api_configs.length > 0
@@ -3073,7 +3375,8 @@
         showToast('جاري حفظ النسخة الاحتياطية...');
         try {
             const backupData = {
-                backupTimestamp: firebase.firestore.FieldValue.serverTimestamp()
+                backupTimestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                lastUpdatedBy: deviceIdentifier // *** تعديل: استخدام معرّف الجهاز الدائم
             };
             // Iterate over all tables in the database
             for (const table of db.tables) {
@@ -3144,6 +3447,10 @@
             });
 
             showToast('تم استعادة البيانات بنجاح!');
+            // *** إضافة: إخفاء الإشعار وحفظ وقت المزامنة بعد الاستعادة الناجحة ***
+            hideBackupNotification();
+            localStorage.setItem('lastBackupSyncTime', Date.now());
+
             // Reload the app to apply all changes from the restored data
             setTimeout(() => location.reload(), 1500);
 
@@ -3582,6 +3889,7 @@
   const workerPhoneInput = document.getElementById('workerPhone');
   const workerDailyRateInput = document.getElementById('workerDailyRate');
   const deleteWorkerBtn = document.getElementById('deleteWorkerBtn');
+  const workerPinInput = document.getElementById('workerPin');
   // Worker Image Elements
   const workerImageInput = document.getElementById('workerImageInput');
   const workerImagePreview = document.getElementById('workerImagePreview');
@@ -4125,6 +4433,7 @@
               workerNameInput.value = worker.name;
               workerPhoneInput.value = worker.phone;
               workerDailyRateInput.value = worker.dailyRate;
+              workerPinInput.value = worker.pin || '';
               if (worker.imageUrl) {
                   workerImageDataBase64.value = worker.imageUrl;
                   workerImagePreview.src = worker.imageUrl;
@@ -4138,6 +4447,156 @@
           deleteWorkerBtn.style.display = 'none';
       }
       openModal('workerModal');
+  }
+
+  function openWorkerPinModal(workerId) {
+    const worker = state.workers.find(w => w.id === workerId);
+    if (!worker) return;
+
+    document.getElementById('pinWorkerName').textContent = worker.name;
+    document.getElementById('pinWorkerId').value = workerId;
+    document.getElementById('workerPinForm').reset();
+    openModal('workerPinModal');
+  }
+
+  function closeWorkerPinModal() {
+    closeModal('workerPinModal');
+  }
+
+  async function handleWorkerPinSubmit(e) {
+    e.preventDefault();
+    const workerId = parseInt(document.getElementById('pinWorkerId').value);
+    const enteredPin = document.getElementById('pinInput').value;
+    const rememberPin = document.getElementById('rememberPinCheckbox').checked;
+
+    const worker = await db.workers.get(workerId);
+
+    if (worker && worker.pin === enteredPin) {
+        // *** إضافة: منطق حفظ PIN في localStorage ***
+        if (rememberPin) {
+            // ملاحظة: حفظ PIN في localStorage ليس آمناً 100% ولكنه مناسب للراحة في هذا التطبيق.
+            const pinData = { workerId: workerId, pin: enteredPin };
+            localStorage.setItem('rememberedPin', JSON.stringify(pinData));
+            showCustomToast('تم حفظ رمز PIN لهذا الجهاز.');
+        } else {
+            // إذا لم يتم تحديد "تذكرني"، قم بإزالة أي بيانات محفوظة سابقاً
+            localStorage.removeItem('rememberedPin');
+        }
+
+        closeWorkerPinModal();
+        renderView('worker-details', { id: workerId });
+        // إعادة تعيين مربع الاختيار بعد الاستخدام
+        document.getElementById('rememberPinCheckbox').checked = false;
+    } else {
+        showCustomToast('رمز PIN غير صحيح!', 'error');
+        const pinInput = document.getElementById('pinInput');
+        pinInput.style.animation = 'shake 0.5s';
+        setTimeout(() => { pinInput.style.animation = ''; }, 500);
+        pinInput.value = '';
+    }
+  }
+
+  // =================================================================
+  // *** إضافة: دوال إدارة PIN (مدمجة من pin.html) ***
+  // =================================================================
+
+  async function renderPinManagementView() {
+    const container = document.getElementById('pinManagementContent');
+    if (!container) return;
+
+    // جلب أحدث بيانات العمال
+    const workers = await db.workers.toArray();
+
+    const workersListHTML = workers && workers.length > 0
+        ? workers.map(worker => {
+            const hasPin = worker.pin && worker.pin.length > 0;
+            return `
+            <div class="card" style="flex-direction: row; justify-content: space-between; align-items: center; text-align: right; margin-bottom: 12px; padding: 12px 16px; cursor: default; transform: none;">
+                <div style="display:flex; align-items:center; gap: 12px;">
+                    <div class="icon" style="width:48px; height:48px; background: linear-gradient(135deg,#f97316,#f59e0b); font-size: 20px; margin-bottom: 0;">
+                        <i class="fas ${hasPin ? 'fa-lock' : 'fa-user'}"></i>
+                    </div>
+                    <div>
+                        <div style="font-weight: 700;">${worker.name}</div>
+                        <div style="font-size: 13px; color: var(--muted);">${hasPin ? 'معين له رمز PIN' : 'بدون رمز PIN'}</div>
+                    </div>
+                </div>
+                <button class="btn" 
+                        data-action="${hasPin ? 'clear-pin' : 'set-pin'}" 
+                        data-id="${worker.id}" 
+                        style="background-color: ${hasPin ? '#ef4444' : '#10b981'};">
+                    <i class="fas ${hasPin ? 'fa-trash-alt' : 'fa-key'}" style="margin-left: 6px;"></i> 
+                    ${hasPin ? 'مسح PIN' : 'تعيين PIN'}
+                </button>
+            </div>
+        `}).join('')
+        : `<p style="text-align:center; color:var(--muted); padding: 20px;">لم يتم إضافة أي عمال بعد.</p>`;
+
+    container.innerHTML = workersListHTML;
+  }
+
+  async function openPinManagementModal() {
+    openModal('pinManagementModal');
+    await renderPinManagementView();
+  }
+
+  async function handlePinManagementClick(e) {
+    const button = e.target.closest('button[data-action]');
+    if (!button) return;
+
+    const action = button.dataset.action;
+    const workerId = parseInt(button.dataset.id);
+
+    if (action === 'set-pin') {
+        openPinEditModal(workerId);
+    } else if (action === 'clear-pin') {
+        openConfirmModal('هل أنت متأكد من مسح رمز PIN لهذا العامل؟', async () => {
+            try {
+                await db.workers.update(workerId, { pin: null });
+                const rememberedPinData = JSON.parse(localStorage.getItem('rememberedPin'));
+                if (rememberedPinData && rememberedPinData.workerId === workerId) {
+                    localStorage.removeItem('rememberedPin');
+                }
+                showToast('تم مسح رمز PIN بنجاح.');
+                closeConfirmModal();
+                await renderPinManagementView(); // تحديث الواجهة داخل النافذة
+            } catch (error) {
+                console.error("Failed to clear PIN:", error);
+                showCustomToast('فشل مسح رمز PIN.', 'error');
+            }
+        });
+    }
+  }
+
+  function openPinEditModal(workerId) {
+    const worker = state.workers.find(w => w.id === workerId);
+    if (!worker) return;
+
+    document.getElementById('pinEditForm').reset();
+    document.getElementById('pinEditWorkerId').value = workerId;
+    document.getElementById('newPin').value = worker.pin || '';
+    document.getElementById('pinEditModalTitle').textContent = `تعديل PIN للعامل: ${worker.name}`;
+    openModal('pinEditModal');
+  }
+
+  async function handlePinEditFormSubmit(e) {
+    e.preventDefault();
+    const workerId = parseInt(document.getElementById('pinEditWorkerId').value);
+    const newPin = document.getElementById('newPin').value;
+
+    if (newPin && !/^\d{4}$/.test(newPin)) {
+        showCustomToast('رمز PIN يجب أن يتكون من 4 أرقام بالضبط.', 'error');
+        return;
+    }
+
+    try {
+        await db.workers.update(workerId, { pin: newPin || null });
+        showToast('تم تحديث رمز PIN بنجاح!');
+        closeModal('pinEditModal');
+        await renderPinManagementView(); // تحديث الواجهة داخل النافذة
+    } catch (error) {
+        showCustomToast('فشل تحديث رمز PIN.', 'error');
+    }
   }
 
   function openAttendanceConfirmModal(data) {
@@ -4263,6 +4722,7 @@
           phone: workerPhoneInput.value,
           imageUrl: workerImageDataBase64.value,
           dailyRate: parseFloat(workerDailyRateInput.value) || 0,
+          pin: workerPinInput.value || null, // Store PIN or null
       };
 
       if (id) { // Update existing worker
@@ -5102,11 +5562,13 @@
     }
   });
 
-  logoutBtn.addEventListener('click', async () => {
+  // *** تعديل: ربط زر تسجيل الخروج بعد التأكد من وجوده ***
+  document.getElementById('logoutBtn')?.addEventListener('click', async () => {
     try {
-        await auth.signOut();
-        // The onAuthStateChanged observer will handle the redirect
-        showToast('تم تسجيل الخروج بنجاح.');
+      await auth.signOut();
+      showToast('تم تسجيل الخروج بنجاح.');
+      // *** إصلاح: إعادة تحميل الصفحة لتنظيف الحالة وضمان عمل تسجيل الدخول مرة أخرى ***
+      window.location.reload();
     } catch (error) {
         console.error("Logout Error:", error);
         showCustomToast('حدث خطأ أثناء تسجيل الخروج.', 'error');
@@ -5129,6 +5591,29 @@
           closeWorkerModal();
           closeConfirmModal();
       });
+  });
+
+  // *** إضافة: معالجات أحداث نوافذ إدارة PIN ***
+  document.getElementById('pinManagementModal').addEventListener('click', (e) => {
+      if (e.target.dataset.action === 'close-modal' || e.target.classList.contains('modal-backdrop')) {
+          closeModal('pinManagementModal');
+      }
+      // معالجة الأزرار داخل النافذة
+      handlePinManagementClick(e);
+  });
+  document.getElementById('pinEditModal').addEventListener('click', (e) => {
+      if (e.target.dataset.action === 'close-modal' || e.target.classList.contains('modal-backdrop')) {
+          closeModal('pinEditModal');
+      }
+  });
+  document.getElementById('pinEditForm').addEventListener('submit', handlePinEditFormSubmit);
+
+  // Worker PIN Modal Listeners
+  document.getElementById('workerPinForm').addEventListener('submit', handleWorkerPinSubmit);
+  document.getElementById('workerPinModal').addEventListener('click', (e) => {
+      if (e.target.dataset.action === 'close-modal' || e.target.classList.contains('modal-backdrop')) {
+          closeWorkerPinModal();
+      }
   });
 
   // Supplier Modal Listeners
@@ -6117,6 +6602,20 @@
     // معالج تبديل الثيم
     themeToggleHeader.addEventListener('click', toggleTheme);
 
+    // *** إضافة: معالج القائمة المنسدلة للمستخدم ***
+    const userProfileBtn = document.getElementById('userProfileBtn');
+    const userProfileDropdown = document.getElementById('userProfileDropdown');
+    userProfileBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        userProfileDropdown.style.display = userProfileDropdown.style.display === 'none' ? 'block' : 'none';
+    });
+    // إغلاق القائمة عند الضغط في أي مكان آخر
+    document.addEventListener('click', (e) => {
+        if (!userProfileBtn.contains(e.target) && !userProfileDropdown.contains(e.target)) {
+            userProfileDropdown.style.display = 'none';
+        }
+    });
+
     // معالج النقر العام على المحتوى الرئيسي (Event Delegation)
     mainContent.addEventListener('click', (e) => {
         const target = e.target;
@@ -6226,19 +6725,97 @@
     }
   }
 
+  // *** إضافة: دوال إظهار وإخفاء إشعار النسخ الاحتياطي ***
+  function showBackupNotification() {
+    document.getElementById('settingsNotificationDot').style.display = 'block';
+    // إذا كنا في صفحة الإعدادات، أظهر النقطة على البطاقة أيضاً
+    if (state.currentView && state.currentView.name === 'settings') {
+        const backupCardDot = document.getElementById('backupRestoreCardDot');
+        if (backupCardDot) backupCardDot.style.display = 'block';
+    }
+  }
+
+  function hideBackupNotification() {
+    document.getElementById('settingsNotificationDot').style.display = 'none';
+    const backupCardDot = document.getElementById('backupRestoreCardDot');
+    if (backupCardDot) backupCardDot.style.display = 'none';
+  }
+
   // --- Auth State Observer ---
   auth.onAuthStateChanged(user => {
-      if (user) {
-          // User is signed in. Initialize the app.
-          console.log("User is signed in:", user.email);
-          initializeApp();
-      } else {
-          // User is signed out. Redirect to login page.
-          console.log("User is signed out. Redirecting to login page.");
-          // Using replace() is better as it removes the current page from session history,
-          // so the user can't click the "back" button to get back to the protected app.
-          window.location.replace('login.html');
-      }
+      // *** تعديل: تهيئة التطبيق دائماً، وتحديث الواجهة حسب حالة المستخدم ***
+      initializeApp().then(() => {
+        const loggedInView = document.getElementById('loggedInView');
+        const loggedOutView = document.getElementById('loggedOutView');
+        const userProfileIcon = document.getElementById('userProfileIcon');
+
+        if (user) {
+            // User is signed in
+            console.log("User is signed in:", user.email);
+            loggedInView.style.display = 'block';
+            loggedOutView.style.display = 'none';
+            userProfileIcon.className = 'fas fa-user-circle';
+
+            const userDisplayName = document.getElementById('userDisplayName');
+            const userDisplayEmail = document.getElementById('userDisplayEmail');
+            
+            firestore.collection('users').doc(user.uid).get().then(doc => {
+                if (doc.exists) {
+                    const userData = doc.data();
+                    userDisplayName.textContent = `${userData.firstName} ${userData.lastName}`;
+                    userDisplayEmail.textContent = user.email;
+                } else {
+                    userDisplayName.textContent = user.email;
+                    userDisplayEmail.textContent = 'مستخدم';
+                }
+            }).catch(() => {
+                userDisplayName.textContent = user.email;
+            });
+
+            firestore.collection('backups').doc(user.uid).onSnapshot(doc => {
+                if (doc.exists) {
+                    const data = doc.data();
+                    if (data.lastUpdatedBy && data.lastUpdatedBy !== deviceIdentifier) {
+                        const backupTime = data.backupTimestamp?.toDate().getTime();
+                        const lastSyncTime = parseInt(localStorage.getItem('lastBackupSyncTime') || '0');
+                        if (backupTime > lastSyncTime) {
+                            showBackupNotification();
+                        }
+                    }
+                }
+            });
+
+            // Listen for purchases (all pending or changed) so manager sees them in real-time
+            firestore.collection('purchases')
+                .onSnapshot(async (querySnapshot) => {
+                    const changes = querySnapshot.docChanges();
+                    let hasPending = false;
+                    for (const change of changes) {
+                        const data = { ...change.doc.data(), firestoreId: change.doc.id };
+                        if (change.type === 'added' || change.type === 'modified') {
+                            await db.purchases.put(data);
+                            if (data.status === 'pending') hasPending = true;
+                        } else if (change.type === 'removed') {
+                            await db.purchases.delete(data.firestoreId);
+                        }
+                    }
+                    // refresh purchases view if visible
+                    if (state.currentView.name === 'purchases') await renderView('purchases');
+                });
+
+            // Separate listener just for the notification dot
+            firestore.collection('purchases').where('status', '==', 'pending').onSnapshot(snapshot => {
+                const dot = document.getElementById('moreFeaturesNotificationDot');
+                if (dot) dot.style.display = snapshot.empty ? 'none' : 'block';
+            });
+        } else {
+            // User is signed out or not logged in yet
+            console.log("User is not signed in. Running in offline mode.");
+            loggedInView.style.display = 'none';
+            loggedOutView.style.display = 'block';
+            userProfileIcon.className = 'fas fa-sign-in-alt';
+        }
+      });
   });
 
 </script>
@@ -6247,4 +6824,3 @@
 ript>
 </body>
 </html>
-
