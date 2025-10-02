@@ -101,7 +101,7 @@
   .card{
     background:var(--card); border-radius:12px; padding:16px; display:flex; flex-direction:column;
     align-items:center; text-align:center; gap:8px; box-shadow:0 10px 30px rgba(2,6,23,.04);
-    cursor:pointer; border: 2px solid transparent;
+    cursor:pointer; border: 2px solid transparent; position: relative; /* *** إضافة: لجعل نقطة الإشعار مرتبطة بالبطاقة *** */
   }
   .card .icon{
     width:50px; height:50px; border-radius:14px; display:flex; align-items:center;
@@ -132,7 +132,7 @@
   .notification-dot {
     position: absolute;
     top: 8px;
-    right: 25%;
+    right: 8px; /* *** تعديل: تغيير الموضع ليناسب البطاقات *** */
     width: 10px;
     height: 10px;
     background-color: #ef4444;
@@ -1277,6 +1277,7 @@
     projectPayments: [],
       purchases: [], // *** إضافة: حالة لتخزين المشتريات للمراجعة ***
     calendarEvents: [],
+    hasNewPurchases: false, // *** إضافة: حالة لتتبع إشعارات المشتريات الجديدة ***
     companyProfiles: [],
     api_configs: []
   };
@@ -1315,11 +1316,11 @@
       color: 'linear-gradient(135deg,#ef4444,#dc2626)' 
     },
     {
-      key: 'inventory',
-      title: 'مخزون الأدوات',
-      description: 'تتبع أدوات ومعدات العمل',
-      icon: 'fa-toolbox',
-      color: 'linear-gradient(135deg,#22c55e,#16a34a)',
+      key: 'purchases',
+      title: 'سجل المشتريات',
+      description: 'تتبع وإدارة جميع المشتريات',
+      icon: 'fa-shopping-cart',
+      color: 'linear-gradient(135deg,#8b5cf6,#6366f1)'
     },
     {
       key: 'more_features',
@@ -1347,8 +1348,13 @@
     },
     { key: 'calendar', title: 'الجدول الزمني', description: 'تنظيم مواعيد المشاريع والمهام', icon: 'fa-calendar-alt', color: 'linear-gradient(135deg,#ec4899,#d946ef)' },    
     { key: 'debts_feature', title: 'سجل الديون', description: 'تتبع ديونك وديون الآخرين', icon: 'fa-book-reader', color: 'linear-gradient(135deg,#8b5cf6,#7c3aed)' },
-    { key: 'notes', title: 'ملاحظات سريعة', description: 'لتسجيل الأفكار والمقاسات', icon: 'fa-sticky-note', color: 'linear-gradient(135deg,#3b82f6,#2563eb)' },
-    { key: 'purchases', title: 'سجل المشتريات', description: 'تتبع وإدارة جميع المشتريات', icon: 'fa-shopping-cart', color: 'linear-gradient(135deg,#8b5cf6,#6366f1)' }
+    { key: 'notes', title: 'ملاحظات سريعة', description: 'لتسجيل الأفكار والمقاسات', icon: 'fa-sticky-note', color: 'linear-gradient(135deg,#3b82f6,#2563eb)' },    {
+      key: 'inventory',
+      title: 'مخزون الأدوات',
+      description: 'تتبع أدوات ومعدات العمل',
+      icon: 'fa-toolbox',
+      color: 'linear-gradient(135deg,#22c55e,#16a34a)'
+    }
   ];
 
   const themes = {
@@ -1402,6 +1408,10 @@
       state.api_configs = await db.api_configs.toArray();
       
       // Always start at home view
+      // *** إضافة: التحقق من وجود مشتريات جديدة عند تحميل الحالة ***
+      const lastChecked = parseInt(localStorage.getItem('lastCheckedPurchasesTimestamp') || '0');
+      const hasUnread = state.purchases.some(p => p.status === 'pending' && (p.createdAt?.toDate()?.getTime() || 0) > lastChecked);
+      state.hasNewPurchases = hasUnread;
       state.currentView = { name: 'home', params: {} };
   }
 
@@ -1509,6 +1519,10 @@
         } 
         
         mainContent.innerHTML = `<div class="view-container">${content}</div>`;
+        // *** إضافة: إخفاء إشعار المشتريات عند زيارة الصفحة ***
+        if (viewName === 'purchases') {
+            hidePurchasesNotification();
+        }
         
         if (viewName === 'settings') {
             document.getElementById('navigateToApiSettings')?.addEventListener('click', () => renderView('api_settings'));
@@ -1724,6 +1738,8 @@
   }
   // --- View Content Generators ---
   function createCardHTML(m) {
+    // *** إضافة: إظهار نقطة الإشعار للمشتريات ***
+    const showDot = m.key === 'purchases' && state.hasNewPurchases;
     return `
       <div class="card" data-key="${m.key}">
         <div class="icon" style="background:${m.color}"><i class="fas ${m.icon}"></i></div>
@@ -1731,6 +1747,7 @@
           <div style="font-weight:900; font-size: 16px;">${m.title}</div>
           <div style="color:var(--muted); font-size:13px; margin-top: 4px;">${m.description}</div>
         </div>
+        <span class="notification-dot" style="display: ${showDot ? 'block' : 'none'};"></span>
       </div>
     `;
   }
@@ -2824,7 +2841,7 @@
 
     return `
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px; gap: 12px;">
-            <button onclick="renderView('home')" class="btn icon-btn" title="العودة للرئيسية"><i class="fas fa-arrow-right"></i></button>
+            <button onclick="renderView('more_features')" class="btn icon-btn" title="العودة"><i class="fas fa-arrow-right"></i></button>
             <h3 style="margin:0; font-weight:800; text-align: right; flex-grow: 1;">مخزون الأدوات</h3>
             <div style="display: flex; gap: 8px;">
                 <button id="addInventoryBtn" class="btn icon-btn" title="إضافة أداة"><i class="fas fa-plus"></i></button> 
@@ -3220,11 +3237,21 @@
 
     return `
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px; gap: 12px;">
-            <button onclick="renderView('more_features')" class="btn icon-btn" title="العودة"><i class="fas fa-arrow-right"></i></button>
+            <button onclick="renderView('home')" class="btn icon-btn" title="العودة للرئيسية"><i class="fas fa-arrow-right"></i></button>
             <h3 style="margin:0; font-weight:800; text-align: right; flex-grow: 1;">مراجعة المشتريات</h3>
         </div>
         ${purchasesListHTML}
     `;
+  }
+
+  // *** إضافة: دالة لإخفاء إشعار المشتريات وتحديث الوقت ***
+  function hidePurchasesNotification() {
+      if (state.hasNewPurchases) {
+          state.hasNewPurchases = false;
+          // تحديث الواجهة الرئيسية إذا كانت معروضة لإخفاء النقطة فوراً
+          if (state.currentView.name === 'home') renderView('home');
+      }
+      localStorage.setItem('lastCheckedPurchasesTimestamp', new Date().getTime().toString());
   }
 
   async function handlePurchaseReview(firestoreId, newStatus) {
@@ -6785,22 +6812,30 @@
                 }
             });
 
-            // Listen for purchases (all pending or changed) so manager sees them in real-time
+            // *** إضافة: مستمع Firestore لإشعارات المشتريات الجديدة ***
             firestore.collection('purchases')
                 .onSnapshot(async (querySnapshot) => {
                     const changes = querySnapshot.docChanges();
-                    let hasPending = false;
+                    let needsRender = false;
+                    const lastChecked = parseInt(localStorage.getItem('lastCheckedPurchasesTimestamp') || '0');
+
                     for (const change of changes) {
                         const data = { ...change.doc.data(), firestoreId: change.doc.id };
                         if (change.type === 'added' || change.type === 'modified') {
                             await db.purchases.put(data);
-                            if (data.status === 'pending') hasPending = true;
+                            // التحقق مما إذا كان هناك طلب جديد لم تتم قراءته بعد
+                            const purchaseTime = data.createdAt?.toDate()?.getTime() || 0;
+                            if (data.status === 'pending' && purchaseTime > lastChecked) {
+                                state.hasNewPurchases = true;
+                                needsRender = true;
+                            }
                         } else if (change.type === 'removed') {
                             await db.purchases.delete(data.firestoreId);
                         }
                     }
-                    // refresh purchases view if visible
-                    if (state.currentView.name === 'purchases') await renderView('purchases');
+                    // تحديث الواجهة الرئيسية لإظهار النقطة، أو تحديث واجهة المشتريات إذا كانت مفتوحة
+                    if (needsRender && state.currentView.name === 'home') await renderView('home');
+                    else if (state.currentView.name === 'purchases') await renderView('purchases');
                 });
 
             // Separate listener just for the notification dot
